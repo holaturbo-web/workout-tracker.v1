@@ -219,6 +219,7 @@ h1{font-weight:600;letter-spacing:4px;font-size:27px;text-shadow:0 0 16px rgba(2
 .timer .lbl{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;opacity:.85}
 .hdrrow{display:flex;align-items:center;gap:12px}
 .jag svg{width:100%;height:100%;display:block}
+.jag img,.jagmini img{image-rendering:auto;-webkit-user-drag:none}
 </style>
 <style id="corpo">
 /* ===== MEGA-CORP LAYER: cold steel, stark white, red accent ===== */
@@ -708,7 +709,7 @@ function finish(){const s=sess(S.cur),L=ensureLog(s);
   const nx=nextSession();const pr=prMap().pr;const prs=Object.keys(pr).filter(k=>k.startsWith(s.id+'|')).length;
   const mins=Math.max(1,Math.round((L.end-L.start)/60000));let vol=0;Object.values(L.ex).forEach(a=>a.forEach(x=>{if(x.done&&x.w>0&&x.r>0)vol+=x.w*x.r}));
   S.cur=nx;save();go('workout');
-  openSheet(`<div style="text-align:center"><div class="jag" style="width:300px;height:225px;margin:0 auto;filter:drop-shadow(0 0 18px rgba(255,59,59,.35))">${JAG_EM}</div>
+  openSheet(`<div style="text-align:center"><div class="jag" style="width:min(320px,86vw);aspect-ratio:604/463;margin:0 auto;filter:drop-shadow(0 0 18px rgba(255,59,59,.35))">${JAG_EM}</div>
     <h1 style="margin:8px 0 2px">Session logged</h1><div class="muted small">${esc(s.name)}</div></div>
     <div class="grid2" style="margin:14px 0"><div class="stat"><div class="v">${done}</div><div class="l">Sets done</div></div><div class="stat"><div class="v">${prs}</div><div class="l">New PRs</div></div>
     <div class="stat"><div class="v">${mins} min</div><div class="l">Time</div></div><div class="stat"><div class="v">${Math.round(vol).toLocaleString()} lb</div><div class="l">Volume</div></div></div>
