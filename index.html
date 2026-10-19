@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Recomp Tracker</title>
+<title>OCELOT//CORP</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Ocelotl">
+<meta name="apple-mobile-web-app-title" content="Ocelot">
 <meta name="theme-color" content="#05070b">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -287,9 +287,9 @@ tr.done .cell,tr.done .setno{background:#0f1a24;border-color:#2f4a60;color:#fff}
 </style>
 </head>
 <body>
-<div class="corpbar"><span class="jagmini" id="jagMini"></span><span class="stack"><span class="wm">OCELOTL<b>//</b>CORP</span><span>Biometric Conditioning Div.</span></span><span class="spacer"></span><span class="stack" style="text-align:right"><span>Subj 0001</span><span class="bc"></span></span></div>
+<div class="corpbar"><span class="jagmini" id="jagMini"></span><span class="stack"><span class="wm">OCELOT<b>//</b>CORP</span><span>Biometric Conditioning Div.</span></span><span class="spacer"></span><span class="stack" style="text-align:right"><span>Subj 0001</span><span class="bc"></span></span></div>
 <div class="wrap" id="view"></div>
-<div class="fine">Ocelotl Corp. // Recomp Protocol v1.0 // Training data remains on this device. No cloud uplink. Missed sessions are logged. Leg day is mandatory.</div>
+<div class="fine">Ocelot Corp. // Recomp Protocol v1.0 // Training data remains on this device. No cloud uplink. Missed sessions are logged. Leg day is mandatory.</div>
 <div class="timer" id="timer">
   <svg class="gauge" id="tGauge" width="82" height="82" viewBox="0 0 100 100"></svg>
   <div><div class="lbl">Recovery</div><div class="lbl" id="timerSub" style="margin-top:4px;letter-spacing:1px">mandatory</div></div>
@@ -417,8 +417,9 @@ const tripB=()=>[WU('No equipment. About 30 minutes.'),
   E('t_slrdl','Single-Leg RDL (bodyweight, slow)','hinge',R('Slow'),3,'10/leg',''),E('t_diamond','Close-Grip / Diamond Push-ups','bench',R('2 RIR'),3,'AMRAP',''),
   E('t_birddog','Bird Dog','',R('Slow'),3,'10/side',''),E('t_sideplank','Side Plank','',R('Hold'),2,'30s/side','')];
 
-const JAG=`<img src="mascot-head.png" alt="Ocelotl jaguar" style="width:100%;height:100%;object-fit:contain;display:block">`;
-const JAG_EM=`<img src="mascot.png" alt="Ocelotl emblem" style="width:100%;height:100%;object-fit:contain;display:block">`;
+const JAG=`<img src="mascot-head.png" alt="Ocelot Corp jaguar" style="width:100%;height:100%;object-fit:contain;display:block">`;
+const JAG_BADGE=`<img src="mascot-badge.png" alt="Ocelot Corp badge" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:50%">`;
+const JAG_EM=`<img src="mascot.png" alt="Ocelot Corp emblem" style="width:100%;height:100%;object-fit:contain;display:block">`;
 const DAYNAMES=['Day 1 — Primary Upper','Day 2 — Primary Lower','Day 3 — Secondary Upper','Day 4 — Secondary Lower'];
 const FNS=[day1,day2,day3,day4];
 const DATES={1:['2026-10-26','2026-10-27','2026-10-29','2026-10-30'],2:['2026-11-10','2026-11-11','2026-11-13','2026-11-14'],
@@ -706,7 +707,7 @@ function finish(){const s=sess(S.cur),L=ensureLog(s);
   const nx=nextSession();const pr=prMap().pr;const prs=Object.keys(pr).filter(k=>k.startsWith(s.id+'|')).length;
   const mins=Math.max(1,Math.round((L.end-L.start)/60000));let vol=0;Object.values(L.ex).forEach(a=>a.forEach(x=>{if(x.done&&x.w>0&&x.r>0)vol+=x.w*x.r}));
   S.cur=nx;save();go('workout');
-  openSheet(`<div style="text-align:center"><div class="jag" style="width:190px;height:232px;margin:0 auto;filter:drop-shadow(0 0 18px rgba(255,59,59,.35))">${JAG_EM}</div>
+  openSheet(`<div style="text-align:center"><div class="jag" style="width:300px;height:225px;margin:0 auto;filter:drop-shadow(0 0 18px rgba(255,59,59,.35))">${JAG_EM}</div>
     <h1 style="margin:8px 0 2px">Session logged</h1><div class="muted small">${esc(s.name)}</div></div>
     <div class="grid2" style="margin:14px 0"><div class="stat"><div class="v">${done}</div><div class="l">Sets done</div></div><div class="stat"><div class="v">${prs}</div><div class="l">New PRs</div></div>
     <div class="stat"><div class="v">${mins} min</div><div class="l">Time</div></div><div class="stat"><div class="v">${Math.round(vol).toLocaleString()} lb</div><div class="l">Volume</div></div></div>
@@ -716,7 +717,7 @@ function moveSess(d){const i=sidx(S.cur)+d;if(i<0||i>=SESSIONS.length)return;S.c
 function openSess(id){S.cur=id;save();go('workout')}
 
 function vPlan(){
-  const nx=nextSession();let h=`<div class="hdrrow"><div style="flex:1"><h1>Plan</h1><div class="muted small">Training protocol // 10-week contract. Tap a day to open it.</div></div><div class="jag" style="width:76px;height:76px">${JAG}</div></div>`;
+  const nx=nextSession();let h=`<div class="hdrrow"><div style="flex:1"><h1>Plan</h1><div class="muted small">Training protocol // 10-week contract. Tap a day to open it.</div></div><div class="jag" style="width:84px;height:84px">${JAG_BADGE}</div></div>`;
   {const td=today(),k=recipeFor(td);h+=`<div class="banner">MEAL PREP // This week: ${esc(PLAN_FOOD[k].name)} — prep ${esc(prepDayFor(td))}. ${esc(PREP[k])}. 7 containers: 4 fridge, 3 freezer.</div>`;}
   let lastW=null;
   SESSIONS.forEach(s=>{
