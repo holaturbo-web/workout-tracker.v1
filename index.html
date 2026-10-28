@@ -312,7 +312,7 @@ ul.book{margin:6px 0;padding-left:18px;line-height:1.45}ul.book li{margin:3px 0}
 </style>
 </head>
 <body>
-<div class="corpbar"><span class="jagmini" id="jagMini"></span><span class="stack"><span class="wm">OCELOTL<b>//</b>CORP</span><span>Biometric Conditioning Div.</span></span><span class="spacer"></span><span class="stack" style="text-align:right"><span>Subj 0001</span><span class="bc"></span></span></div>
+<div class="corpbar"><span class="jagmini" id="jagMini"></span><span class="stack"><span class="wm">OCELOTL<b>//</b>CORP</span><span>Biometric Conditioning Div.</span></span><span class="spacer"></span><span class="stack" style="text-align:right"><span>Build v31</span><span class="bc"></span></span></div>
 <div class="wrap" id="view"></div>
 <div class="fine">Ocelotl Corp. // Recomp Protocol v1.0 // Training data remains on this device. No cloud uplink. Missed sessions are logged. Leg day is mandatory.</div>
 <div class="timer" id="timer">
@@ -477,6 +477,7 @@ const MAIN_LIFTS=[{id:'pbench',name:'Paused Bench',c:'var(--bench)'},{id:'incl_t
 /* =========================================================
    STATE
    ========================================================= */
+const BUILD='v31';
 const KEY='recomp_tracker_v1',BAK=KEY+'_bak';
 const BASE_T={rest:{kcal:2000,p:160,c:85,f:100},train:{kcal:2150,p:160,c:110,f:100}};
 const DEFAULT={version:1,created:new Date().toISOString(),
@@ -1031,6 +1032,7 @@ function vMore(){
   <textarea id="expTxt" style="display:none;margin-top:8px" readonly></textarea></div>
   <div class="card"><div style="font-weight:700">Restore a backup</div><div class="muted small" style="margin:6px 0 10px">Pick a file you exported before (for a new phone, or after reinstalling).</div>
   <input type="file" accept=".json,application/json" onchange="importFile(this)"></div>
+  <div class="card"><div class="row"><div style="flex:1"><div style="font-weight:700">App version</div><div class="muted small" style="font-family:var(--mono)">BUILD ${BUILD}</div></div><button class="btn sm" onclick="forceUpdate()">Check for update</button></div></div>
   <div class="card small muted">Last backup: ${S.lastExport?new Date(S.lastExport).toLocaleDateString():'never'} · ${done} of ${SESSIONS.length} workouts finished · Data saved on this phone only · Works with no internet once installed.</div>`;
 }
 
@@ -1590,7 +1592,12 @@ function mtCharts(inMt){const days=Object.keys(S.mt).filter(isDate).sort();if(!d
 /* boot */
 FD=null;
 try{renderTabs();render();if(!$('view').innerText.includes('Screen error'))keepGoodCopy()}catch(e){console.error(e)}
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{try{r.update()}catch(e){}}).catch(()=>{}));
+  // when a new version takes over, reload once so the screen shows it
+  let reloaded=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloaded)return;reloaded=true;const a=document.activeElement;if(!(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'))&&!RT.st)location.reload()})}
+async function forceUpdate(){if(!confirm('Download the newest version of the app? Your logged data stays on this phone.'))return;
+  try{const rs=await navigator.serviceWorker.getRegistrations();for(const r of rs)await r.update();const ks=await caches.keys();for(const k of ks)await caches.delete(k)}catch(e){}
+  location.reload()}
 </script>
 </body>
 </html>
