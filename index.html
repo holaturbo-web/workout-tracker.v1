@@ -1376,17 +1376,27 @@ const CALLER={
     if(+c<9&&R()<p){c+=', plus '+adds[Math.floor(R()*adds.length)];if(blk===3&&R()<0.25)c+=', '+adds[Math.floor(R()*adds.length)]}
     if(kind==='sim'&&R()<0.2)c+=', and move';return c},
   gap(kind){return (kind==='shadow'?6000:4200)+Math.random()*2500},
-  say(txt){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt.replace(/\b10\b/,'ten'));u.rate=1.08;u.pitch=0.9;speechSynthesis.speak(u)}catch(e){}}};
+  voice:null,ok:null,
+  pickVoice(){try{const v=speechSynthesis.getVoices()||[];this.voice=v.find(x=>/^en-US/i.test(x.lang)&&x.localService)||v.find(x=>/^en/i.test(x.lang))||null}catch(e){}},
+  // iPhone only lets a page speak if the first utterance starts inside a tap; call this from the tap itself
+  unlock(txt){try{if(!window.speechSynthesis)return false;if(!this.voice)this.pickVoice();speechSynthesis.resume();this.say(txt||'');return true}catch(e){return false}},
+  say(txt){try{if(!window.speechSynthesis)return;const ss=speechSynthesis;ss.resume();
+    if(ss.speaking||ss.pending)ss.cancel();
+    const u=new SpeechSynthesisUtterance(String(txt).replace(/\b10\b/,'ten'));u.lang='en-US';if(this.voice)u.voice=this.voice;u.rate=1.08;u.pitch=0.9;u.volume=1;
+    u.onstart=()=>{this.ok=true};ss.speak(u)}catch(e){}}};
+try{if(window.speechSynthesis){CALLER.pickVoice();speechSynthesis.onvoiceschanged=()=>CALLER.pickVoice()}}catch(e){}
+function mtTestVoice(){const ok=CALLER.unlock('3, plus left kick');if(!ok)toast('This browser has no voice — calls show on screen instead');
+  else setTimeout(()=>{if(!CALLER.ok)toast('No sound? Check the silent switch and volume, then tap Test voice again')},2500)}
 
 /* ---------- round timer with beeps + combo calls ---------- */
 const RT={iv:null,st:null,
-  start(i){const s=mtSession(mtDay()),p=s&&s.steps[i];if(!p||!p.rounds)return;Timer.stop();unlockAudio();
+  start(i){const s=mtSession(mtDay()),p=s&&s.steps[i];if(!p||!p.rounds)return;Timer.stop();unlockAudio();if(p.call&&S.mtCaller!==false)CALLER.unlock('Round 1');
     this.st={i,label:p.name,rounds:p.rounds,work:p.work,rest:p.rest,r:1,phase:'work',end:Date.now()+p.work*1000,call:p.call&&S.mtCaller!==false?p.call:null,w:s.w,next:Date.now()+3000,said:''};
     clearInterval(this.iv);this.iv=setInterval(()=>this.tick(),250);this.tick()},
   stop(){clearInterval(this.iv);this.st=null;try{window.speechSynthesis&&speechSynthesis.cancel()}catch(e){}this.draw()},
   tick(){const s=this.st;if(!s)return;
     while(s.end<=Date.now()){if(s.phase==='work'){if(s.r>=s.rounds){beep();const i=s.i;this.stop();const L=mtLog(mtDay());L.steps=L.steps||{};L.steps[i]=true;save();toast('Done: '+s.label);vMuayKeep();return}
-        if(s.rest>0){s.phase='rest';s.end+=s.rest*1000;s.said=''}else{s.r++;s.end+=s.work*1000}}else{s.phase='work';s.r++;s.end+=s.work*1000;s.next=Date.now()+2500}beep1()}
+        if(s.rest>0){s.phase='rest';s.end+=s.rest*1000;s.said=''}else{s.r++;s.end+=s.work*1000}}else{s.phase='work';s.r++;s.end+=s.work*1000;s.next=Date.now()+2500;if(s.call)CALLER.say('Round '+s.r)}beep1()}
     if(s.call&&s.phase==='work'&&Date.now()>=s.next&&s.end-Date.now()>2500){s.said=CALLER.pick(s.call,s.w,s.r,s.rounds);CALLER.say(s.said);s.next=Date.now()+CALLER.gap(s.call)}
     this.draw()},
   draw(){const e=$('rtBox');if(!e)return;const s=this.st;if(!s){e.innerHTML='';e.style.display='none';return}e.style.display='block';
@@ -1477,7 +1487,7 @@ function mtTodayHtml(){
   if((w===5||w===9)&&!MT_GATES[w-1].every((_,i)=>S.mtGate[(w-1)+'_'+i]))h+=`<div class="banner">BLOCK GATE NOT CONFIRMED — tick the week ${w-1} checklist, or repeat the deload week. <button class="btn sm" style="margin-left:6px" onclick="mtRepeatDeload()">Repeat deload</button></div>`;
   if(tw&&s.dow===3)h+=`<div class="banner">TEST WEEK ${tw} — after your hardest round today, log heart rate and rope skips in the test card below.</div>`;
   // steps
-  h+=`<div class="card"><div class="row" style="gap:6px;flex-wrap:wrap"><div style="font-weight:700;flex:1">Session</div><button class="mini" onclick="mtCallerToggle()">Caller: ${S.mtCaller===false?'OFF':'ON'}</button>${s.type==='Q'?`<button class="mini" onclick="mtFlag('busy')">Full session</button>`:`<button class="mini" onclick="mtFlag('busy')">Busy day: 15 min</button>`}${L.swap&&!L.busy?`<button class="mini" onclick="mtFlag('swap')">Undo swap</button>`:''}</div>`;
+  h+=`<div class="card"><div class="row" style="gap:6px;flex-wrap:wrap"><div style="font-weight:700;flex:1">Session</div><button class="mini" onclick="mtCallerToggle()">Caller: ${S.mtCaller===false?'OFF':'ON'}</button>${S.mtCaller===false?'':'<button class="mini" onclick="mtTestVoice()">🔊 Test voice</button>'}${s.type==='Q'?`<button class="mini" onclick="mtFlag('busy')">Full session</button>`:`<button class="mini" onclick="mtFlag('busy')">Busy day: 15 min</button>`}${L.swap&&!L.busy?`<button class="mini" onclick="mtFlag('swap')">Undo swap</button>`:''}</div>`;
   s.steps.forEach((p,i)=>{const dn=L.steps&&L.steps[i];const tm=p.rounds?(p.rounds>1?`${p.rounds} × ${p.work>=60?(p.work/60)+' min':p.work+' sec'}${p.rest?` / ${p.rest} sec rest`:''}`:(p.work>=60?(p.work/60)+' min':'')):'';
     h+=`<div class="mtstep ${dn?'done':''}"><button class="chk" onclick="mtStep(${i})">${CHECK}</button><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(p.name)} <span class="muted small" style="font-family:var(--mono)">${tm}</span></div>${p.note?`<div class="muted small">${esc(p.note)}</div>`:''}
       ${p.call&&S.mtCaller!==false?'<div class="small" style="color:var(--gold)">🔊 Combo caller calls Ambush numbers in this step</div>':''}
