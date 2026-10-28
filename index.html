@@ -298,6 +298,14 @@ th:nth-child(5),td:nth-child(5){width:48px}
 .seg{display:flex;border:1px solid var(--line);margin:6px 0 4px;background:#05080c}
 .seg button{flex:1;padding:9px 0;font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--muted)}
 .seg button.on{background:var(--red,#ff3b3b);color:#fff;font-weight:800;box-shadow:0 0 12px rgba(255,59,59,.35)}
+.seg2 button{font-size:10px;letter-spacing:1px;padding:8px 0}.seg2 button.on{background:#14202c;color:var(--blue);box-shadow:inset 0 -2px 0 var(--blue)}
+.callout{font-family:var(--mono);font-size:22px;font-weight:800;color:#fff;letter-spacing:1px;margin-top:4px;text-shadow:0 0 10px rgba(255,59,59,.6)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.mini.on{background:var(--red,#ff3b3b);color:#fff;border-color:var(--red,#ff3b3b)}
+.rate{display:flex;gap:4px}.rate button{width:34px;height:30px;border:1px solid var(--line);font-family:var(--mono);color:var(--muted);background:#05080c}.rate button.on{background:var(--gold);color:#000;font-weight:800}
+.combos{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:8px;font-size:14px}.combos b{font-family:var(--mono);color:var(--red,#ff3b3b);margin-right:4px}
+.ttab{table-layout:auto;font-size:12px}.ttab td,.ttab th{padding:4px 2px;text-align:center;font-family:var(--mono);overflow-wrap:normal;word-break:normal}.ttab td:first-child,.ttab th:first-child{width:auto;min-width:96px;text-align:left;font-family:inherit}
+ul.book{margin:6px 0;padding-left:18px;line-height:1.45}ul.book li{margin:3px 0}
+.filmnote{margin-top:6px;width:100%;font-size:13px;padding:6px;background:#05080c;border:1px solid var(--line);color:var(--text)}.film.seen{opacity:.7}
 .mtstep{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
 .mtstep .chk{margin:0;flex:none}.mtstep.done .chk{background:var(--green)}.mtstep.done .chk svg{stroke:#06210f}.mtstep.done>div{opacity:.6}
 </style>
@@ -512,6 +520,13 @@ function repair(raw){
       done:!!x.done,busy:!!x.busy,swap:!!x.swap,shin:!!x.shin,fix:typeof x.fix==='string'?x.fix.slice(0,300):'',steps:isObj(x.steps)?x.steps:{},t:num(x.t,0)}}
   o.mtFilm={};if(isObj(s.mtFilm))for(const k in s.mtFilm)if(s.mtFilm[k]===true&&+k>=0&&+k<40)o.mtFilm[k]=true;
   o.mtGate={};if(isObj(s.mtGate))for(const k in s.mtGate)if(s.mtGate[k]===true)o.mtGate[k]=true;
+  for(const d in o.mt){const f=s.mt[d].fault;o.mt[d].fault=Number.isInteger(f)&&f>=0&&f<20?f:null}
+  o.mtFilmNote={};if(isObj(s.mtFilmNote))for(const k in s.mtFilmNote)if(typeof s.mtFilmNote[k]==='string'&&+k>=0&&+k<80)o.mtFilmNote[k]=s.mtFilmNote[k].slice(0,400);
+  o.mtFilmCat=typeof s.mtFilmCat==='string'?s.mtFilmCat:'all';o.mtTab=['today','prog','book','film'].includes(s.mtTab)?s.mtTab:'today';o.mtCaller=s.mtCaller!==false;
+  o.mtSkills={};if(isObj(s.mtSkills))for(const k in s.mtSkills){if(!Array.isArray(s.mtSkills[k]))continue;const h=s.mtSkills[k].filter(x=>isObj(x)&&isDate(x.d)&&[0,1,2,3].includes(x.v)).map(x=>({d:x.d,v:x.v}));if(h.length)o.mtSkills[String(k).slice(0,80)]=h.slice(-60)}
+  const tst=(src,lims)=>{const out={};if(isObj(src))for(const w of ['1','4','8','12']){const T=src[w];if(!isObj(T))continue;const r={d:isDate(T.d)?T.d:null};for(const k in lims)r[k]=num(T[k],null,lims[k][0],lims[k][1]);out[w]=r}return out};
+  o.mtTests=tst(s.mtTests,{peak:[60,230],hr1:[40,230],skips:[0,400],sim:[0,10]});
+  o.mtScore=tst(s.mtScore,{guard:[1,5],stance:[1,5],kick:[1,5],intent:[1,5],balance:[1,5],clinch:[1,5]});
   delete o.fuelDate;
   return o;
 }
@@ -545,7 +560,9 @@ function mergeState(M,T){
   if(T.checkins.length>M.checkins.length){M.checkins=T.checkins;M.targets=T.targets}
   M.lastExport=Math.max(M.lastExport||0,T.lastExport||0)||null;
   for(const d in T.mt){const a=M.mt[d],b=T.mt[d];if(!a||(b.t||0)>(a.t||0))M.mt[d]=b}
-  M.mtFilm=Object.assign({},T.mtFilm,M.mtFilm);M.mtGate=Object.assign({},T.mtGate,M.mtGate);M.mtShift=Math.max(M.mtShift||0,T.mtShift||0);
+  M.mtFilm=Object.assign({},T.mtFilm,M.mtFilm);M.mtFilmNote=Object.assign({},T.mtFilmNote,M.mtFilmNote);
+  for(const k in T.mtSkills){const a=M.mtSkills[k],b=T.mtSkills[k];if(!a||b[b.length-1].d>a[a.length-1].d)M.mtSkills[k]=b}
+  for(const k of ['mtTests','mtScore'])for(const w in T[k]){const a=M[k][w],b=T[k][w];if(!a)M[k][w]=b;else for(const f in b)if(a[f]==null)a[f]=b[f]}M.mtGate=Object.assign({},T.mtGate,M.mtGate);M.mtShift=Math.max(M.mtShift||0,T.mtShift||0);
   return M}
 function save(){try{
     const cur=readKey(KEY);
@@ -986,8 +1003,9 @@ function buildExport(){
     note:'Upload this file to Claude to review the block and build the next one.',
     maxes_used:{paused_bench:M.bench,incline:M.incline,close_grip:M.cgb,rdl:M.rdl,front_squat:M.front,front_squat_8rm:M.front8},
     exercise_notes:S.notes,personal_records:prMap().bests,
-    muay_thai:{plan_start:mtStart(),film_studied:Object.keys(S.mtFilm).map(i=>MT_FIGHTS[i][0]),gates:S.mtGate,
-      days:Object.keys(S.mt).sort().map(d=>{const x=S.mt[d],s=mtSession(d);return {date:d,week:mtWeek(d),session:s?s.name:null,high_day:s?s.high:null,resting_hr:x.rhr,effort:x.rpe,minutes:x.min,load:x.rpe!=null&&x.min?x.rpe*x.min:null,kicks_left:x.kl,kicks_right:x.kr,kick_target:s?s.kicks:null,done:x.done,busy_day:x.busy,swapped_for_recovery:x.swap,shin_pain:x.shin,fix:x.fix}})},
+    muay_thai:{plan_start:mtStart(),stance:'southpaw',film_studied:Object.keys(S.mtFilm).map(i=>MT_FIGHTS[i]&&MT_FIGHTS[i][0]),film_notes:Object.fromEntries(Object.entries(S.mtFilmNote).map(([i,v])=>[MT_FIGHTS[i]?MT_FIGHTS[i][0]:i,v])),gates:S.mtGate,
+      streak:mtStreak(),adherence:mtAdherence(),monthly_tests:S.mtTests,video_scorecard:S.mtScore,skills_now:Object.fromEntries(MT_SKILL_IDS.map(id=>[id,mtSkillLevel(id)])),skill_history:S.mtSkills,
+      days:Object.keys(S.mt).sort().map(d=>{const x=S.mt[d],s=mtSession(d);return {date:d,week:mtWeek(d),session:s?s.name:null,high_day:s?s.high:null,resting_hr:x.rhr,effort:x.rpe,minutes:x.min,load:x.rpe!=null&&x.min?x.rpe*x.min:null,kicks_left:x.kl,kicks_right:x.kr,kick_target:s?s.kicks:null,done:x.done,busy_day:x.busy,swapped_for_recovery:x.swap,shin_pain:x.shin,fault:x.fault!=null?MT_FAULTS[x.fault]:null,fix:x.fix}})},
     nutrition:{targets:S.targets,checkins:S.checkins,saved_foods:S.foods,
       days:Object.keys(S.food||{}).sort().map(d=>({date:d,training_day:isTrainDay(d),totals:totals(d),water_glasses:(S.food[d]||{}).water||0,ate_out:(S.food[d].items||[]).filter(i=>i.src==='out').length,items:S.food[d].items}))},
     maxes_inputs:S.maxes,next_block_retest:S.maxes.retest,bodyweight_log:S.bw,lift_summary:summary,
@@ -1168,9 +1186,39 @@ function vFuel(){
   $('view').innerHTML=h;
 }
 
+// Coach's how-tos (Ambush Muay Thai blog, via the fight knowledge base), mirrored for a southpaw.
+// c=category t=title w=what h=how m=mistakes d=solo drill f=fight to watch
+const MT_BOOK=[
+ {c:'Punching',t:'The hook (Coach Elton)',w:'A curved punch around the guard. Your lead hook is the right hand.',h:['Let the arm extend to reach the target','Travel on an oval path, not a circle','Tighten the arc at contact — that snap is the acceleration','Drive through, aiming toward their opposite shoulder','Finish with elbow and hip turned so bodyweight lands'],m:'Pulling the arm short, stopping at the surface, arm-only hooks with no hip turn.',d:'Speed bag and heavy bag, filmed from side and front: check the oval path and the finished hip.',f:'Donaire vs Montiel (2011) · Trinidad vs Vargas (2000)'},
+ {c:'Punching',t:'Doubling up',w:'Two punches with the same hand at different levels. They defend the first and open the second.',h:['Lead hand low then high, then rear hand low then high (Bradley)','Ward\'s "3 high, 3 low": hook to the head, then hook to the body','For you: right hook head, right hook body (spleen side vs orthodox)','Also drill a light left to the head, then a full left to the body (their liver)'],d:'Tape a head line and a body line on the bag; take a small step to load the punching-side foot before the second shot.',f:'Gatti vs Ward I, round 9 · Bradley vs Rios'},
+ {c:'Punching',t:'The body hook (Hatton)',w:'"Head first, left hook, left hook."',h:['Touch the head first; step the punching-side foot a few inches out and load it','Twist from the legs through the hips; other hand stays up','Vs the jab: wait for it, slip and step in one motion, rip to the floating rib, hands up, spin off','For you: slip right, step the right foot out, right body hook — your left is now lined up','Inside: elbows inside theirs, dip, twist, short uppercut to the body'],m:'Leading with the body hook and eating a punch over the top.',d:'Right hook to the body, uppercut through the gap, full-weight hook to the body.',f:'Hatton vs Castillo (2007)'},
+ {c:'Punching',t:'Ascending and descending angles',w:'Punches that come up underneath or drop over the top of a high guard.',h:['Uppercut lifts their guard','Descending hook comes down over it onto the head'],d:'Uppercut, then descending hook on the bag.',f:'GGG vs Rubio (2014)'},
+ {c:'Punching',t:'The overhand (your left)',w:'A looping rear-hand punch that evades and hits in one motion.',h:['Often lands around "2 o\'clock" with a nearly straight arm','Cross counter: throw it over their jab','Marciano dip: duck low as if diving for the waist, then loop it over — suits short fighters','Pin them on the ropes; make them drift toward your power side'],m:'Tired, hunched fighters eat overhands — and so do people who reach down to push a shorter man.',d:'Dip, overhand left, right hook coming up.',f:'Zambidis vs El Hadj · Spong vs Farkas'},
+ {c:'Punching',t:'Defend, then counter',w:'Lawler (a southpaw) and Mayweather\'s pull counter.',h:['Outside slip, then right uppercut, right hook','Pull counter: stay in range, read the straight punch, lean back slightly, fire the left cross as you come forward, step out','Best against a single jab; mix with slips; avoid on the ropes'],d:'Shadowbox in a mirror vs an imagined jab, or let the swinging bag come at you: pull, then counter.'},
+ {c:'Punching',t:'The hand trap',w:'Pin their guard hand to open a lane.',h:['Southpaw vs orthodox: your lead hands meet','Trap their lead hand with your right, then fire your left straight or a left elbow'],d:'Shadowbox a right-hand pat-down into a left straight; on the bag, slap with the right then fire the left.'},
+ {c:'Punching',t:'The jab',w:'Your right jab is your range tool against taller opponents.',h:['Doubles, jab to the body, jab-step-jab','Hands back to a tight guard every time'],d:'Jab-only bag rounds.',f:'Quartey vs Park (1995), rounds 3–4 · GGG vs Murray'},
+ {c:'Kicks',t:'The Thai kick angle (Coach Jason)',w:'Most learners have a skewed picture of their own kick.',h:['Drive the knee deep into the target — much more lower-leg bend than feels natural','Land as much shin as possible','"Golden kick": rises up their centre line and turns over late like a clock hand, not a bat swing','Accelerate late and push the shin through; power from the hips, standing foot swivels'],m:'Straight leg slapping, wide arc, too much effort on takeoff, telegraphing, a TKD chamber-and-snap.',d:'Film your left kick in slow motion from the side; check knee depth and how much shin lands.'},
+ {c:'Kicks',t:'Body hook into rear low kick (Hoost)',w:'For you: right hook to the body, then left low kick.',h:['The body shot shifts their weight onto the lead leg so they can\'t check','Each punch loads your hips for the next strike','Hoost vs a southpaw: cross, uppercut, low kick; leaves the cross out to trap and measure'],d:'Start the kick as the hook returns — no reset between them.'},
+ {c:'Kicks',t:'Low-kick tactics (class notes)',h:['Use straight punches to set up the low kick','Counter their straight punches with an inside or outside low kick','Counter their cross and their low kick with your own low kick','Inside low kick to open their stance — for you vs orthodox, right kick to the inside of their lead leg','Finish punch combinations with an outside low kick']},
+ {c:'Kicks',t:'The pendulum kick',w:'In the Ambush curriculum but not defined on the blog — ask your coach which version.',h:['Shuffle kick: rear foot steps to the lead, then the lead leg kicks','Pendulum teep: same step, to teep a retreating opponent','Miss and return: step back so their low kick misses, then shuffle straight back in'],d:'Shuffle, then right kick or right teep; step back, then shuffle in.'},
+ {c:'Kicks',t:'Leg-kick defence (Aldo)',h:['Vs calf kicks: hinge the lead knee and swing the heel back behind the standing leg','Or pivot about 30° on the rear foot so the kick lands on the front of the shin'],f:'Aldo vs Faber, WEC 48 (27 leg kicks)'},
+ {c:'Kicks',t:'Intent: Samkor, your southpaw model',w:'The most important part of the kick is intent. Samkor is a southpaw famous for his left kick — copy him without mirroring.',d:'Rounds of single, fully committed left kicks, resetting your stance after each.'},
+ {c:'Kicks',t:'The pull against kicks',w:'Lean back so the kick misses entirely, then return a kick or a cross. Saenchai uses it against jabs and kicks.'},
+ {c:'Knees, clinch & elbows',t:'Knee like a Thai 1: anchoring',w:'Your opponent is your anchor — no anchor, no bodyweight in the knee.',h:['Twist and turn them until they\'re planted (the "terminus")','Launch the knee off that rooted weight; each knee moves them to the next anchor'],m:'Pulling on their forearms; pulling them straight in while you step back.',d:'Hold the top of the bag, throw your leg almost straight back to pull it in, knee off its swing. If the bag swings away, you pushed instead of anchoring.',f:'Langsuan in slow motion'},
+ {c:'Knees, clinch & elbows',t:'Knee like a Thai 2: circular knees',w:'Power comes from the circular motion of the hip.',h:['From the clinch, pull hard on one arm so they spin slightly','Body stretches out, standing leg nearly straight','The partly turned hip closes into a circular knee'],m:'Pushing your arms out to make room for a straight knee — gives up pressure.',d:'Hold a collar tie on the bag, turn it, close the hip into a left knee.'},
+ {c:'Knees, clinch & elbows',t:'Knee like a Thai 3: forward intent',w:'Seek the clinch. You don\'t reach, grab, then knee — the knee goes because you\'re already there.',h:['Finish every strike leaning in and stay forward','Self-check: after strikes, do you close in or reset back?']},
+ {c:'Knees, clinch & elbows',t:'Knee like a Thai 4: entering on pressure',w:'No visible transition into the clinch — Samson Issan\'s clinch "materialises".',h:['A blocked hook still leaves your arm next to their head','Driving them to the ropes ends in the clinch','Once touching, you\'re in clinch range: surge, wrap, let the knee go'],d:'Right jab, left cross, right hook that wraps the bag, knees — no beat in between. Film it and look for any pause.',f:'Cherry Sor Wanich vs Dekkers'},
+ {c:'Knees, clinch & elbows',t:'Knee like a Thai 5: negative pressure',w:'Back up or step off-line on purpose so they close the gap for you. Not retreating.',h:['Get them surging forward','Between their movements, stop or retreat less than they expect so they collide into your clinch'],d:'Push the bag away, fade two steps as it swings back, then stop dead or take half a step in and clinch. Fade to your right first.',f:'Leonard vs Hagler, rounds 1–4 · Jaroentong vs Dekkers (southpaw)'},
+ {c:'Knees, clinch & elbows',t:'Hollow body and the straight knee',h:['Rajasak: hollow the chest and pull the hips back to make room, keeping tight contact','Langsuan: near-constant forward pressure; straight knees "down the pipe" at every range'],f:'Langsuan vs Pongsiri "Rambo"'},
+ {c:'Knees, clinch & elbows',t:'Dieselnoi\'s knee mechanics',h:['The knee rises from below and drives up with a hidden internal twist','Torso in a "C" — never lean back like a plank; rotate the hips','Standing heel lifts onto the ball as the hip turns','Arms clamp inward and pull down onto the knee; target solar plexus with the knee itself','"Set up left, kill with right" — for you: light right knees, then a full left knee'],m:'Leaning back, stabbing the knee out, rocking the hips, pulling arms outward, aiming too high.'},
+ {c:'Knees, clinch & elbows',t:'Clinch position and control',h:['Straight-arm frame keeps distance and breaks balance; keep it high to cover you','Vs bigger opponents (Yodsanklai): underhook, reverse cross-face, inside bicep control','Flow beats talent (Pot controlling Saenchai)'],f:'Oley vs Chamuakpet'},
+ {c:'Knees, clinch & elbows',t:'Sweeps (partner work)',h:['Knee-counter sweep: as their knee rises, pull down on the standing-leg side, push and pull at once','From double underhooks: shove; when they shove back, pull one side and pivot','Body-lock throw: hands below their ribs, hips in, bump, lift, twist','Escape a double collar tie: straighten your back and step in, pull one bicep down'],m:'Staying in fighting stance (exposes your inner thigh), leaving space, pushing nonstop.'},
+ {c:'Knees, clinch & elbows',t:'Elbows (Condit)',w:'Rising elbow, then spinning back elbow.',d:'Off a jab or a missed punch: rising elbow then spinning back elbow on the bag, controlled.',f:'Condit vs Alves (2015)'}];
+
 /* =========================================================
-   MUAY THAI — 12-week solo striking plan (from 2026-10-27-striking-plan)
-   Lives inside the Workout tab behind the LIFT / MUAY THAI switch.
+   MUAY THAI — 12-week solo striking plan (2026-10-27-striking-plan + fight knowledge base)
+   Southpaw. Ambush Muay Thai combo numbers. Lives in the Workout tab behind LIFT / MUAY THAI.
+   Sub-tabs: TODAY · PROGRESS · PLAYBOOK · FILM
    ========================================================= */
 const MT_START='2026-11-09';
 const MT_DAYMAP=['A','B','C','A','B','D','E']; // Mon..Sun
@@ -1178,35 +1226,100 @@ const MT_WEEKS=[null,
  {wave:'Low',mon:[3,2],kicks:10},{wave:'Medium',mon:[4,2],kicks:12},{wave:'High',mon:[5,2],kicks:15},{wave:'Deload',mon:[2,2],kicks:8},
  {wave:'Low',mon:[3,3],kicks:15,hiit:6},{wave:'Medium',mon:[4,3],kicks:20,hiit:8},{wave:'High',mon:[5,3],kicks:25,hiit:10},{wave:'Deload',mon:[2,3],kicks:12,tech:true},
  {wave:'Low',mon:[4,3],kicks:25,sim:3},{wave:'Medium',mon:[5,3],kicks:30,sim:4},{wave:'High',mon:[5,3],kicks:30,sim:5,burst:true},{wave:'Deload / test',mon:[2,3],kicks:15,sim:5,test:true}];
+// [theme, southpaw drill focus, fight index, combo-caller theme calls]
 const MT_THEMES=[null,
- ['Stance, guard, footwork, jab','Return to stance after every strike; step and jab; double jab',0],
- ['Teep, lead and rear','Teep to the hips; step-back rear teep; jab then teep',13],
- ['Rear low kick and checking','Kick without squaring up; check, then return a kick',1],
- ['Deload: review weeks 1–3','Jab, teep and low kick combinations',15],
- ['Dutch combos into the low kick','Cross, hook, low kick; cross, uppercut, low kick',16],
- ['Body work','Body jab, liver hook, body kick, finish low',6],
- ['Slips and the counter lead hook','Slip the jab and return a hook; roll under, then a body hook',2],
- ['Deload: head movement','Slow peek-a-boo slip step and shifting',17],
- ['Short-fighter entries','Feint, T-step jab; slip step in; pressure the bag to an imagined corner',5],
- ['Inside low kick → high kick setups',"Volk's step-up inside kick; low, body, then high",8],
- ['Knees and clinch','Step-in knee; clinch knees on the bag; body-lock position',7],
- ['Deload and test: distance','Bait the lunge and counter; in-and-out rhythm',22]];
-const MT_FIGHTS=[['Volkanovski vs Holloway III','UFC 276, 2022','Inside low kick, in-and-out vs a longer jabber'],['Volkanovski vs Korean Zombie','UFC 273, 2022','Leg kicks opening the hands'],
- ['Yan vs Aldo','UFC 251, 2020','Steady pressure, body knee, finishing late'],['Yan vs Sandhagen','UFC 267, 2021','Holding the centre vs a taller switch-hitter'],
- ['Yan vs Dvalishvili','UFC 323, 2025','Body attack, takedown defence'],['Topuria vs Volkanovski','UFC 298, 2024','Shoulder feints, body jabs, pinning'],
- ['Rodtang vs Haggerty II','ONE, Jan 2020','Liver hook, body-first pressure'],['Rodtang vs Haggerty I','ONE, Aug 2019','Walking through a longer teeper'],
- ['Superbon vs Petrosyan','ONE First Strike, 2021','Body kicks set up the head kick'],['Superbon vs Tayfun Özcan','ONE FN 11, 2023','Head-kick setups'],
- ['Superbon vs Tawanchai','ONE FF 46, 2023','Elite kicking exchanges'],['Superbon vs Sitthichai III','ONE, 2020','Kicking chess vs a southpaw'],
- ['Rodtang vs Takeru','ONE 172, 2025','Pocket power'],['Saenchai vs Liam Harrison III','2012','Teeps, lay-backs, sweeps vs a puncher'],
- ['Saenchai vs Tetsuya Yamato','2010','Southpaw kick setups'],['Dekkers vs Coban (rematch)','Lumpinee, 1991','Dutch hands vs a Thai'],
- ['Dekkers vs Duane Ludwig','K-1 MAX, 2005','Pressure with one arm'],['Tyson vs Berbick','1986','Peek-a-boo entries'],
- ['Tyson vs Holmes','1988','Head movement vs a great jab'],['Tyson vs Spinks','1988','Peak Tyson'],
- ['Volkanovski vs Aldo','UFC 237, 2019','Pressure vs an elite counter-puncher'],['Yan vs Sterling I','UFC 259, 2021','Slow build vs a longer opponent'],
- ['Thompson vs Hendricks','UFC FN 82, 2016','Karate distance, countering the lunge'],['Machida vs Rashad Evans','UFC 98, 2009','Elusive karate countering'],
- ['Petrosyan vs Andy Souwer','K-1 MAX, 2009','Defence-first ring generalship']];
+ ['Stance, guard, footwork, jab, the outside-foot battle','Return to stance after every strike; step your right foot outside an imagined orthodox lead foot, then right jab and left cross',13,['step outside, 2','1','1, 1','step outside, 1, 2']],
+ ['Teep, lead and rear','Right teep to the hips; step-back left teep; jab then teep',14,['right teep','step back, left teep','1, right teep','2, left teep']],
+ ['Left low kick and checking','Left kick without squaring up; check with your right leg, then return a kick',1,['left low kick','check, left kick','2, left low kick','1, left low kick']],
+ ['Deload: review weeks 1–3','Jab, teep and left low kick combinations',15,['1, right teep','2, left low kick','1, 2, left kick']],
+ ['Dutch combos, mirrored','Left cross, right hook, left low kick; left cross, right uppercut, left low kick',16,['3, left low kick','7, left low kick','2, right hook, left low kick','2, right uppercut, left low kick']],
+ ['Body work and the left liver kick','Right jab to the body; left kick to the liver set up by a left high kick; right body hook',44,['1 to the body','left high kick, left body kick','right body hook, left kick','2 to the body, left hook body']],
+ ['Slips and the counter right hook','Slip their jab and return a right hook; roll under, then a body hook',2,['slip, right hook','roll, right body hook','slip, 2','pull, 2']],
+ ['Deload: defence and head movement','Slow slips, shoulder roll, shifting',54,['slip, slip','roll','pull, 2','shoulder roll, 2']],
+ ['Short-fighter entries','Feint, then step in to the outside angle; slip step in; pressure an imagined corner',45,['feint, step in, 3','slip step, 4','feint, 2, left kick','pressure, 6']],
+ ['Side teep, switch kick and setting up the high kick','Side teep off the hip; switch kick; low, body, then high',8,['side teep','switch kick','left low, left body, left high','1, switch kick']],
+ ['Knees, clinch and the slicing elbow',"Coach Jason's anchored bag knees; circular knees; flow combos straight into the clinch; elbow off right-hand control",37,['3, clinch, knees','left knee','right hand trap, left elbow','2, clinch, left knee, left knee']],
+ ['Deload and test: distance','Bait the lunge and counter with the left; in-and-out rhythm',43,['step back, 2','pull, 2','in, 1, out','bait, left kick']]];
+// Film library: [fight, event/date, watch for, categories]
+const MT_FIGHTS=[
+ ['Volkanovski vs Holloway III','UFC 276, Jul 2022','A 5\'6" fighter beating a longer jabber: inside low kick, in-and-out','core'],
+ ['Volkanovski vs Korean Zombie','UFC 273, Apr 2022','Leg kicks opening the hands','core'],
+ ['Yan vs Aldo','UFC 251, Jul 2020','Steady pressure, body knee, finishing late','core'],
+ ['Yan vs Sandhagen','UFC 267, Oct 2021','Holding the centre vs a taller switch-hitter','core'],
+ ['Yan vs Dvalishvili','UFC 323, Dec 2025','Body attack, takedown defence','core'],
+ ['Topuria vs Volkanovski','UFC 298, Feb 2024','Shoulder feints, body jabs, pinning to the fence','core'],
+ ['Rodtang vs Haggerty II','ONE, Jan 2020','Liver hook knockdown, body-first pressure, cornering','core'],
+ ['Rodtang vs Haggerty I','ONE, Aug 2019','Walking through a longer teeper','core'],
+ ['Superbon vs Petrosyan','ONE First Strike, Oct 2021','Body kicks setting up the head kick','core'],
+ ['Superbon vs Tayfun Özcan','ONE FN 11, Jun 2023','Head-kick setups','core'],
+ ['Superbon vs Tawanchai','ONE FF 46, Dec 2023','Elite Muay Thai kicking exchanges','core'],
+ ['Superbon vs Sitthichai III','ONE, 2020','Kicking chess against a southpaw','core'],
+ ['Rodtang vs Takeru','ONE 172, Mar 2025','Pocket power','core'],
+ ['Saenchai vs Liam Harrison III','Muay Thai Warriors, Dec 2012','Teeps, lay-backs, sweeps against a puncher','core south'],
+ ['Saenchai vs Tetsuya Yamato','Los Angeles, Mar 2010','Southpaw kick setups','core south'],
+ ['Dekkers vs Coban (rematch)','Lumpinee, 1991','Dutch hands against a Thai fighter','core'],
+ ['Dekkers vs Duane Ludwig','K-1 MAX Final, Jul 2005','Pressure while fighting with one arm','core'],
+ ['Tyson vs Berbick','Nov 1986','Peek-a-boo entries and combinations','core'],
+ ['Tyson vs Holmes','Jan 1988','Head movement against a great jab','core'],
+ ['Tyson vs Spinks','Jun 1988','Peak Tyson','core'],
+ ['Volkanovski vs Aldo','UFC 237, May 2019','Pressure against an elite counter-puncher','core'],
+ ['Yan vs Sterling I','UFC 259, Mar 2021',"Yan's slow build against a longer opponent",'core'],
+ ['Thompson vs Hendricks','UFC FN 82, Feb 2016','Karate distance, countering the lunge','core'],
+ ['Machida vs Rashad Evans','UFC 98, May 2009','Elusive karate countering','core'],
+ ['Petrosyan vs Andy Souwer','K-1 MAX Final, Oct 2009','Defence-first ring generalship','core south'],
+ ['Gatti vs Micky Ward I','May 18, 2002','Round 9: hook to the head, then hook to the liver drops Gatti','coach'],
+ ['Ricky Hatton vs José Luis Castillo','Las Vegas, Jun 23, 2007','Short pressure fighter; doubling up; body hook finish','coach'],
+ ['Timothy Bradley vs Brandon Rios','Las Vegas, Nov 7, 2015','Doubling up; body shots that finish','coach'],
+ ['Mike Zambidis vs Chahid Oulad El Hadj','K-1 MAX 2010 and 2012','5\'5.5" puncher: overhands, hooks, trading knockdowns','coach'],
+ ['GGG vs Marco Antonio Rubio','Carson, Oct 18, 2014','Uppercut, then a descending hook over the guard','coach'],
+ ['GGG vs Martin Murray','Monte Carlo, Feb 21, 2015','Stalking, jab and body attack','coach'],
+ ['Ike Quartey vs Jung-Oh Park','Atlantic City, Mar 4, 1995','Rounds 3–4: an elite jab','coach'],
+ ['Nonito Donaire vs Fernando Montiel','Las Vegas, Feb 19, 2011','Counter hook mechanics','coach'],
+ ['Felix Trinidad vs Fernando Vargas','Dec 2, 2000','Hook whipped around the guard','coach'],
+ ['Sugar Ray Leonard vs Marvin Hagler','Caesars Palace, Apr 6, 1987','Rounds 1–4: negative pressure, ring generalship','coach'],
+ ['Jaroentong vs Ramon Dekkers','WMC 140 lb title, Dec 4, 1993','A southpaw drawing Dekkers into the clinch','coach south'],
+ ['Cherry Sor Wanich vs Ramon Dekkers','Lumpinee, 1995','Walking through power into the clinch','coach'],
+ ['Langsuan vs Pongsiri "Rambo"','Lumpinee, 1988–91 (three fights)','Straight knees at every range, forward pressure','coach'],
+ ['Oley vs Chamuakpet','1992 and 1993','Straight-arm frame, punches mixed into the clinch','coach'],
+ ['Changpuek vs Rick Roufus','Las Vegas, Nov 5, 1988','Low kicks beating a puncher who dropped him twice','coach'],
+ ['José Aldo vs Urijah Faber','WEC 48, Apr 24, 2010',"27 leg kicks taking away Faber's base",'coach'],
+ ['Carlos Condit vs Thiago Alves','Goiânia, May 30, 2015','Rising and spinning elbows','coach'],
+ ['Vicente Saldívar vs Howard Winstone II','Cardiff, Jun 15, 1967','Short southpaw pressing through being outboxed; round-11 body hook','mex south'],
+ ['Cristian Mijares vs Alexander Muñoz','May 17, 2008','A 5\'6" southpaw slipping the straight right and countering','mex south'],
+ ['Jesse "Bam" Rodríguez vs Juan Francisco Estrada','Phoenix, Jun 29, 2024','Southpaw jab and straight left; body-shot finish','mex south'],
+ ['Isaac Cruz vs Rolando Romero','Mar 30, 2024','5\'4" pressure: body work and left hook against a longer opponent','mex'],
+ ['Julio César Chávez vs Edwin Rosario','Nov 21, 1987','Patient pressure, 61% connect rate, body attack','mex'],
+ ['Israel Vázquez vs Rafael Márquez II','Aug 4, 2007',"Short fighters' inside exchanges; heart under fire",'mex'],
+ ['Óscar Valdez vs Miguel Berchelt','Las Vegas, Feb 20, 2021','Smaller man outboxing a bigger one: jab, move, tie up the right','mex'],
+ ['Marco Antonio Barrera vs Naseem Hamed','Las Vegas, Apr 7, 2001','How an orthodox fighter beats a southpaw: what opponents will try on you','mex'],
+ ['Juan Manuel Márquez vs Manny Pacquiao IV','Las Vegas, Dec 8, 2012','Counter right hand: the risk a southpaw runs when over-committing','mex'],
+ ['Canelo Álvarez vs Gennady Golovkin II','Las Vegas, Sep 15, 2018','Body-punching volume against a taller jabber','mex'],
+ ['Yair Rodríguez vs Josh Emmett','UFC 284, Feb 2023','Southpaw left kicks to the body draining a pressure fighter','mex south'],
+ ['Alexa Grasso vs Valentina Shevchenko','UFC 285, Mar 2023','Winning from southpaw; short combinations and leg kicks','mex south'],
+ ['Pernell Whitaker vs Julio César Chávez','Alamodome, Sep 10, 1993','Defence, the Philly shell, slipping, counter-punching (5\'6" southpaw)','south'],
+ ['Vasiliy Lomachenko vs Jorge Linares','MSG, May 12, 2018','Southpaw footwork and angles; liver-shot finish','south']];
+const MT_FCATS=[['all','All'],['core','Core'],['south','Southpaw'],['coach','Coach picks'],['mex','Mexican'],['todo','Not watched']];
+// Ambush Level 1 combos, written for a southpaw (jab = right, cross = left)
+const MT_COMBOS=[null,['Jab, jab','Right, right'],['Jab, cross','Right, left'],['Jab, cross, hook','Right, left, right hook'],['Jab, hook, cross','Right, right hook, left'],
+ ['Cross, hook, hook','Left, right hook, left hook'],['Jab, cross, cross','Right, left, left'],['Cross, lead uppercut, hook','Left, right uppercut, right hook'],
+ ['Jab, lead uppercut, cross','Right, right uppercut, left'],['Lead kick','Right kick'],['Rear kick','Left kick']];
 const MT_GATES={4:['Saturday tempo feels like RPE 5 or less','No shin or joint pain lasts into the next day'],
  8:["Finished week 7's HIIT with good form on the last interval",'Morning heart rate steady or lower than at the start']};
 const MT_NAMES={A:'Bag rounds',B:'Technique',C:'Film & fix',D:'Tempo intervals',E:'Mobility + film',Q:'Busy-day 15 min'};
+const MT_TESTWEEKS=[1,4,8,12];
+// Ambush Level 1 curriculum, rated 0 new · 1 learning · 2 solid · 3 sharp
+const MT_SKILLS=[['Punches',['Jab','Cross','Uppercut','Hook','Overhand']],['Kicks',['Step-through kick','Round kick','Switch kick','Pendulum kick']],
+ ['Teeps',['Lead teep','Rear teep','Switch teep','Slide teep']],['Knees',['Step-through knee','Long knee','Switch knee','Round knee','Diagonal knee']],
+ ['Elbows',['Spear','Slash (descending)','Slash (ascending)','Tomahawk','Uppercut elbow','Reverse elbow','Spinning elbow']],
+ ['Clinch (partner)',['Collar tie (inside)','Collar tie (reverse)','Crossface','Bicep control (inside)','Bicep control (outside)','Underhook','Overhook']],
+ ['Defence',['Block','Catch','Check','Parry','Pull','Roll','Slip']],
+ ['Footwork',['Angle','Step-through','Pivot','Kick-feint (rear)','Kick-feint (switch)','Pendulum in','Pendulum out','Range','Cheat step','Shift','Thai hop','Back pivot']],
+ ['Combos 1–10',['1 Jab, jab','2 Jab, cross','3 Jab, cross, hook','4 Jab, hook, cross','5 Cross, hook, hook','6 Jab, cross, cross','7 Cross, uppercut, hook','8 Jab, uppercut, cross','9 Right kick','10 Left kick']]];
+const MT_SKILL_IDS=[];MT_SKILLS.forEach(([c,a])=>a.forEach(n=>MT_SKILL_IDS.push(c+'|'+n)));
+const MT_LEVELS=['New','Learning','Solid','Sharp'];
+const MT_CHECKS=[['guard','Guard up (hands home)'],['stance','Back to stance after strikes'],['kick','Kick angle & shin contact'],['intent','Forward intent (no backing off)'],['balance','Balance on kicks/knees'],['clinch','No pause into the clinch']];
+const MT_FAULTS=['Hand drops when kicking','Squaring up on kicks','Straight-leg / slap kick','Not returning to stance','Backing off after strikes','Pause before the clinch','Leaning back on knees','Arm-only hook (no hip)','Bending at the waist / looking down','Chin up','Other'];
+
 let MTD=null; // day shown on Muay Thai (never saved)
 const mtDay=()=>MTD||today();
 function mtStart(){return addDays(MT_START,S.mtShift||0)}
@@ -1214,60 +1327,83 @@ function daysBetween(a,b){return Math.round((new Date(b+'T12:00:00')-new Date(a+
 function mtWeek(d){const n=daysBetween(mtStart(),d);return n<0?0:Math.floor(n/7)+1}
 function mtLog(d){if(!S.mt[d])S.mt[d]={};S.mt[d].t=Date.now();return S.mt[d]}
 function mtRhrAvg(d){const v=[];for(let i=2;i<=8;i++){const x=S.mt[addDays(d,-i)];if(x&&x.rhr)v.push(x.rhr)}return v.length>=3?v.reduce((a,b)=>a+b)/v.length:null}
+function mtRhr7(d){const v=[];for(let i=0;i<7;i++){const x=S.mt[addDays(d,-i)];if(x&&x.rhr)v.push(x.rhr)}return v.length?Math.round(v.reduce((a,b)=>a+b)/v.length*10)/10:null}
 function mtRhrAlert(d){const a=mtRhrAvg(d),t=S.mt[d],y=S.mt[addDays(d,-1)];return !!(a&&t&&t.rhr&&y&&y.rhr&&t.rhr>=a+5&&y.rhr>=a+5)}
-function mtWeekLoad(monday){let s=0;for(let i=0;i<7;i++){const x=S.mt[addDays(monday,i)];if(x&&x.rpe&&x.min)s+=x.rpe*x.min}return s}
+function mtWeekLoad(monday){let s=0;for(let i=0;i<7;i++){const x=S.mt[addDays(monday,i)];if(x&&x.rpe!=null&&x.min)s+=x.rpe*x.min}return s}
 function mtLoadInfo(d){const w=mtWeek(d);if(w<2)return null;const mon=addDays(mtStart(),(w-1)*7),cur=mtWeekLoad(mon),prev=[];
   for(let k=1;k<=3&&w-k>=1;k++){const l=mtWeekLoad(addDays(mon,-7*k));if(l)prev.push(l)}if(!prev.length)return {cur,avg:null};
   const avg=prev.reduce((a,b)=>a+b)/prev.length;return {cur,avg,over:cur>avg*1.2&&!/Deload/.test(MT_WEEKS[w].wave)}}
-// Builds the session for a date: which day type, the steps (with round timers), kick target
+// Builds the session for a date: day type, steps (with round timers), kick target
 function mtSession(d){
   const w=mtWeek(d);if(w<1||w>12)return null;const W=MT_WEEKS[w],L=S.mt[d]||{},dow=(new Date(d+'T12:00:00').getDay()+6)%7;
-  let type=MT_DAYMAP[dow];const thu=dow===3;const high=type==='A';
+  let type=MT_DAYMAP[dow];const thu=dow===3,high=type==='A';
   if(L.busy)type='Q';else if(L.swap&&high)type='B';
   const blk=Math.ceil(w/4),th=MT_THEMES[w],steps=[];let kicks=null,rpe='4–5';
-  const st=(name,rounds,work,rest,note)=>steps.push({name,rounds,work,rest,note:note||''});
+  const st=(name,rounds,work,rest,note,call)=>steps.push({name,rounds,work,rest,note:note||'',call:call||null});
   if(type==='A'){rpe=blk===1?'6':blk===2?'7–8':'8';kicks=L.shin?Math.ceil(W.kicks/2):W.kicks;
-    st('Rope',1,300,0,'Easy, last 30 sec fast');st('Shadowboxing',2,180,60,'70% speed on: '+th[0]);
-    if(thu&&W.hiit){st('Technical bag',2,180,60,th[0]);st('HIIT',W.hiit,20,40,'All-out punches + kicks 20 sec, easy shadowboxing 40 sec')}
-    else if(thu&&W.tech){st('Technical bag',2,180,60,th[0]+' — no HIIT this week')}
-    else if(thu&&W.sim){st(W.test?'TEST: fight simulation':'Fight simulation',W.sim,180,60,'Build: technical → setups → pressure & power → clinch & knees → everything'+(W.burst?'. Last round in 30-sec bursts':'')+(W.test?'. Log RPE and heart rate after':''))}
-    else st('Bag rounds',W.mon[0],W.mon[1]*60,60,'R1 technical (theme only) · middle: setups, combos ending in a kick · last: pressure, body, finish low');
+    st('Rope',1,300,0,'Easy, last 30 sec fast');st('Shadowboxing',2,180,60,'70% speed on: '+th[0],'shadow');
+    if(thu&&W.hiit){st('Technical bag',2,180,60,th[0],'bag');st('HIIT',W.hiit,20,40,'All-out punches + kicks 20 sec, easy shadowboxing 40 sec')}
+    else if(thu&&W.tech){st('Technical bag',2,180,60,th[0]+' — no HIIT this week','bag')}
+    else if(thu&&W.sim){st(W.test?'TEST: fight simulation':'Fight simulation',W.sim,180,60,'Build: technical → setups → pressure & power → clinch & knees → everything'+(W.burst?'. Last round in 30-sec bursts':'')+(W.test?'. Log effort and heart rate after':''),'sim')}
+    else st('Bag rounds',W.mon[0],W.mon[1]*60,60,'R1 technical (theme only) · middle: setups, combos ending in a kick · last: pressure, body, finish low','bag');
     st('Hard kicks',0,0,0,'Count below. Stop early if shins are still sore');st('Cool-down',1,120,0,'Easy shadowboxing, nose breathing')}
-  else if(type==='B'){st('Rope',1,180,0);st('Shadowboxing',3,180,30,'R1 footwork only · R2 '+th[0]+' · R3 everything');
+  else if(type==='B'){st('Rope',1,180,0);st('Shadowboxing',3,180,30,'R1 footwork only · R2 '+th[0]+' · R3 everything'+(dow===1?' · this week\'s closed-stance round: imagine a SOUTHPAW opponent in R3':''),'shadow');
     st('Bag drills',3,180,60,'RPE 4–5: '+th[1]+'. Taped target, return to knee guard after kicks');
     st('Speed bag',2,120,30,w>=7&&w<=9?'Finish each round with 10 sec of slips':'Rhythm and hand speed')}
-  else if(type==='C'){rpe='3–4';st('Rope',1,180,0);st('Film yourself',3,180,30,'Phone side-on or at 45°');st('Watch it back',1,480,0,'Compare with '+MT_FIGHTS[th[2]][0]+'. Pick ONE fault');
-    st('Drill the fix',3,120,30,'Slow, then normal speed. Note the fix below')}
+  else if(type==='C'){rpe='3–4';st('Rope',1,180,0);st('Film yourself',3,180,30,'Phone side-on or at 45°','shadow');st('Watch it back',1,480,0,'Compare with '+MT_FIGHTS[th[2]][0]+'. Pick ONE fault below');
+    st('Drill the fix',3,120,30,'Slow, then normal speed')}
   else if(type==='D'){rpe='5';const m=blk===1?15:blk===2?20:25;st('Rope',1,180,0);st('Tempo intervals',m,15,45,'15 sec on the bag at 70–75%, 45 sec easy shadowboxing. Should be able to talk in short sentences')}
   else if(type==='E'){rpe='1–2';st('Mobility (coach Phase 1)',1,1200,0,'Foam roll calves, hams, quads, hip flexors, glutes · T-spine flex/ext · step hip-flexor stretch · Cook hip lift · lateral hamstring');
     st('Watch the fight',0,0,0,MT_FIGHTS[th[2]][0]+' — once for fun, again for: '+th[0])}
-  else{rpe='4–5';st('Rope',1,180,0);st('Shadowboxing',3,180,20,'Theme: '+th[0]+', 70% speed');st('Speed bag',1,120,0)}
+  else{rpe='4–5';st('Rope',1,180,0);st('Shadowboxing',3,180,20,'Theme: '+th[0]+', 70% speed','shadow');st('Speed bag',1,120,0)}
   const liftDay=SESSIONS.some(s=>s.date===d&&s.id!=='tra'&&s.id!=='trb');
   return {w,W,dow,type,high:type==='A',name:MT_NAMES[type],steps,kicks,rpe,theme:th,fight:MT_FIGHTS[th[2]],fightIdx:th[2],liftDay,blk}}
 
-/* round timer with beeps between phases */
+/* ---------- combo caller: speaks Ambush numbers during work rounds (offline voices) ---------- */
+const CALLER={
+  pick(kind,w,r,rounds){const blk=Math.max(1,Math.ceil(w/4)),th=MT_THEMES[Math.min(12,Math.max(1,w))],R=Math.random;
+    if(r===rounds&&R()<0.5)return th[3][Math.floor(R()*th[3].length)];
+    if(R()<0.25)return th[3][Math.floor(R()*th[3].length)];
+    const pool=blk===1?[1,2,3,4,9,10,2,2]:blk===2?[1,2,3,4,5,6,7,8,9,10]:[1,2,3,4,5,6,7,8,9,10,3,6];
+    let c=String(pool[Math.floor(R()*pool.length)]);
+    const adds=blk===1?['left kick','right teep']:blk===2?['left kick','left body kick','right body hook','left knee','right teep','feint']:['left kick','left body kick','left high kick','right body hook','clinch, knees','slicing elbow','switch kick','left knee'];
+    const p=blk===1?0.25:blk===2?0.45:0.6;
+    if(+c<9&&R()<p){c+=', plus '+adds[Math.floor(R()*adds.length)];if(blk===3&&R()<0.25)c+=', '+adds[Math.floor(R()*adds.length)]}
+    if(kind==='sim'&&R()<0.2)c+=', and move';return c},
+  gap(kind){return (kind==='shadow'?6000:4200)+Math.random()*2500},
+  say(txt){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt.replace(/\b10\b/,'ten'));u.rate=1.08;u.pitch=0.9;speechSynthesis.speak(u)}catch(e){}}};
+
+/* ---------- round timer with beeps + combo calls ---------- */
 const RT={iv:null,st:null,
   start(i){const s=mtSession(mtDay()),p=s&&s.steps[i];if(!p||!p.rounds)return;Timer.stop();unlockAudio();
-    this.st={i,label:p.name,rounds:p.rounds,work:p.work,rest:p.rest,r:1,phase:'work',end:Date.now()+p.work*1000};clearInterval(this.iv);this.iv=setInterval(()=>this.tick(),250);this.tick()},
-  stop(){clearInterval(this.iv);this.st=null;this.draw()},
+    this.st={i,label:p.name,rounds:p.rounds,work:p.work,rest:p.rest,r:1,phase:'work',end:Date.now()+p.work*1000,call:p.call&&S.mtCaller!==false?p.call:null,w:s.w,next:Date.now()+3000,said:''};
+    clearInterval(this.iv);this.iv=setInterval(()=>this.tick(),250);this.tick()},
+  stop(){clearInterval(this.iv);this.st=null;try{window.speechSynthesis&&speechSynthesis.cancel()}catch(e){}this.draw()},
   tick(){const s=this.st;if(!s)return;
     while(s.end<=Date.now()){if(s.phase==='work'){if(s.r>=s.rounds){beep();const i=s.i;this.stop();const L=mtLog(mtDay());L.steps=L.steps||{};L.steps[i]=true;save();toast('Done: '+s.label);vMuayKeep();return}
-        if(s.rest>0){s.phase='rest';s.end+=s.rest*1000}else{s.r++;s.end+=s.work*1000}}else{s.phase='work';s.r++;s.end+=s.work*1000}beep1()}
+        if(s.rest>0){s.phase='rest';s.end+=s.rest*1000;s.said=''}else{s.r++;s.end+=s.work*1000}}else{s.phase='work';s.r++;s.end+=s.work*1000;s.next=Date.now()+2500}beep1()}
+    if(s.call&&s.phase==='work'&&Date.now()>=s.next&&s.end-Date.now()>2500){s.said=CALLER.pick(s.call,s.w,s.r,s.rounds);CALLER.say(s.said);s.next=Date.now()+CALLER.gap(s.call)}
     this.draw()},
   draw(){const e=$('rtBox');if(!e)return;const s=this.st;if(!s){e.innerHTML='';e.style.display='none';return}e.style.display='block';
     const left=Math.max(0,Math.ceil((s.end-Date.now())/1000)),tot=s.phase==='work'?s.work:s.rest,txt=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
     e.innerHTML=`<div class="row" style="gap:12px"><svg class="gauge" width="86" height="86" viewBox="0 0 100 100">${gaugeSVG(left/tot,txt,s.phase==='work'?'WORK':'REST',s.phase==='work'?'#ff3b3b':'#8fd3ff',null)}</svg>
-      <div style="flex:1"><div style="font-weight:800">${esc(s.label)}</div><div class="muted small" style="font-family:var(--mono)">ROUND ${s.r} / ${s.rounds} · ${s.phase==='work'?'GO':'rest'}</div>
+      <div style="flex:1;min-width:0"><div style="font-weight:800">${esc(s.label)}</div><div class="muted small" style="font-family:var(--mono)">ROUND ${s.r} / ${s.rounds} · ${s.phase==='work'?'GO':'rest'}</div>
+      ${s.call?`<div class="callout">${s.phase==='work'&&s.said?esc(s.said.toUpperCase()):'…'}</div>`:''}
       <div class="row" style="gap:6px;margin-top:6px"><button class="mini" onclick="RT.skip()">Skip ›</button><button class="mini" onclick="RT.stop()">Stop</button></div></div></div>`},
   skip(){if(this.st){this.st.end=Date.now();this.tick()}}};
 function beep1(){try{unlockAudio();if(!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=660;g.gain.setValueAtTime(0.0001,AC.currentTime);
   g.gain.exponentialRampToValueAtTime(0.4,AC.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+0.35);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+0.4);if(navigator.vibrate)navigator.vibrate(150)}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&RT.st)RT.tick()});
 
+/* ---------- navigation ---------- */
 function modeSwitch(){const m=S.wmode==='mt';return `<div class="seg"><button class="${m?'':'on'}" onclick="setWMode('lift')">LIFT</button><button class="${m?'on':''}" onclick="setWMode('mt')">MUAY THAI</button></div>`}
 function setWMode(m){S.wmode=m;if(m==='mt')MTD=null;save();go('workout')}
+function mtTabs(){const t=S.mtTab||'today';return `<div class="seg seg2">${[['today','TODAY'],['prog','PROGRESS'],['book','PLAYBOOK'],['film','FILM']].map(([k,l])=>`<button class="${t===k?'on':''}" onclick="mtGo('${k}')">${l}</button>`).join('')}</div>`}
+function mtGo(t){S.mtTab=t;if(t==='today')MTD=null;save();vMuay();window.scrollTo(0,0)}
 function vMuayKeep(){const y=window.scrollY;vMuay();window.scrollTo(0,y)}
 function mtMove(n){MTD=addDays(mtDay(),n);if(MTD===today())MTD=null;vMuay()}
+
+/* ---------- logging actions ---------- */
 function mtSet(k,v){const d=mtDay();let n=v===''?null:+v;
   if(n!=null){const lim={rhr:[30,140],rpe:[0,10],min:[1,180]}[k];if(!isFinite(n)||n<lim[0]||n>lim[1]){toast(`${{rhr:'Resting HR',rpe:'Effort',min:'Minutes'}[k]} must be ${lim[0]}–${lim[1]}`);vMuayKeep();return}n=k==='rhr'||k==='min'?Math.round(n):Math.round(n*2)/2}
   const L=mtLog(d);L[k]=n;save();vMuayKeep()}
@@ -1276,45 +1412,76 @@ function mtStep(i){const L=mtLog(mtDay());L.steps=L.steps||{};L.steps[i]=!L.step
 function mtKick(side,n){const s=mtSession(mtDay()),L=mtLog(mtDay()),k=side==='l'?'kl':'kr';L[k]=Math.max(0,Math.min(500,(L[k]||0)+n));
   if(n>0&&s&&s.kicks&&L[k]===s.kicks+1)toast('Past today\'s target of '+s.kicks+' per leg — shins need time to adapt');save();vMuayKeep()}
 function mtFix(v){const L=mtLog(mtDay());L.fix=String(v).trim().slice(0,300);save()}
+function mtFault(i){const L=mtLog(mtDay());L.fault=L.fault===i?null:i;save();vMuayKeep()}
 function mtFinish(){const d=mtDay(),s=mtSession(d),L=mtLog(d);
   if(L.rpe==null){toast('Rate the session effort (0–10) first');const e=$('mtRpe');if(e)e.focus();return}
-  if(!L.min)L.min=s&&s.type==='Q'?15:30;L.done=true;RT.stop();save();vMuayKeep();
-  const load=L.rpe*L.min;toast(`Session logged · load ${load}`)}
+  if(!L.min)L.min=s&&s.type==='Q'?15:30;L.done=true;RT.stop();save();vMuayKeep();toast(`Session logged · load ${L.rpe*L.min} · streak ${mtStreak()} day${mtStreak()===1?'':'s'}`)}
 function mtFilmToggle(i){S.mtFilm[i]=!S.mtFilm[i];if(!S.mtFilm[i])delete S.mtFilm[i];save();vMuayKeep()}
+function mtFilmNote(i,v){v=String(v).trim().slice(0,400);if(v)S.mtFilmNote[i]=v;else delete S.mtFilmNote[i];save()}
+function mtFilmCat(c){S.mtFilmCat=c;save();vMuayKeep()}
 function mtGate(w,i){const k=w+'_'+i;S.mtGate[k]=!S.mtGate[k];save();vMuayKeep()}
 function mtRepeatDeload(){if(!confirm('Repeat the deload week? Everything from this week on moves back 7 days.'))return;S.mtShift=(S.mtShift||0)+7;save();vMuayKeep();toast('Deload week repeated')}
-let mtShowFilms=false;
+function mtCallerToggle(){S.mtCaller=S.mtCaller===false;save();vMuayKeep();toast('Combo caller '+(S.mtCaller?'on':'off'))}
+// skills: history list per skill, one entry per day
+function mtSkillLevel(id){const h=S.mtSkills[id];return h&&h.length?h[h.length-1].v:0}
+function mtRate(id,v){const h=S.mtSkills[id]||(S.mtSkills[id]=[]);const d=today();if(h.length&&h[h.length-1].d===d)h[h.length-1].v=v;else h.push({d,v});save();vMuayKeep()}
+function mtSkillAvgOn(d){let s=0;MT_SKILL_IDS.forEach(id=>{const h=S.mtSkills[id]||[];let v=0;h.forEach(x=>{if(x.d<=d)v=x.v});s+=v});return s/MT_SKILL_IDS.length}
+// monthly tests + video scorecard keyed by plan week (1,4,8,12)
+function mtTestSet(w,k,v){const T=S.mtTests[w]||(S.mtTests[w]={});let n=v===''?null:+v;
+  const lim={peak:[60,230],hr1:[40,230],skips:[0,400],sim:[0,10]}[k];if(n!=null&&(!isFinite(n)||n<lim[0]||n>lim[1])){toast(`Use ${lim[0]}–${lim[1]}`);vMuayKeep();return}
+  T[k]=n==null?null:Math.round(n);T.d=today();save();vMuayKeep()}
+function mtScoreSet(w,k,v){const T=S.mtScore[w]||(S.mtScore[w]={});T[k]=T[k]===v?null:v;T.d=today();save();vMuayKeep()}
+function mtScoreAvg(w){const T=S.mtScore[w];if(!T)return null;const v=MT_CHECKS.map(([k])=>T[k]).filter(x=>x);return v.length?v.reduce((a,b)=>a+b)/v.length:null}
+function mtTestWeek(d){const w=mtWeek(d);return MT_TESTWEEKS.includes(w)?w:null}
+// consistency
+function mtStreak(){let d=today();if(!(S.mt[d]&&S.mt[d].done))d=addDays(d,-1);let n=0;while(S.mt[d]&&S.mt[d].done&&n<400){n++;d=addDays(d,-1)}return n}
+function mtAdherence(){const st=mtStart(),td=today();if(td<st)return null;const end=addDays(st,83);const last=td<end?td:end;let planned=0,done=0;
+  for(let d=st;d<=last;d=addDays(d,1)){planned++;if(S.mt[d]&&S.mt[d].done)done++}return {planned,done}}
+
+/* ---------- views ---------- */
+let mtShowFilms=false,mtOpen={};
+function mtToggleOpen(k){mtOpen[k]=!mtOpen[k];vMuayKeep()}
 function vMuay(){
+  const t=S.mtTab||'today';
+  let h=modeSwitch()+`<div class="hdrrow"><div style="flex:1"><h1>Muay Thai</h1><div class="muted small">Southpaw · solo striking // 12-week plan · starts ${fmtDate(mtStart())}</div></div><div class="jag" style="width:72px;height:72px">${JAG_BADGE}</div></div>`+mtTabs();
+  h+=t==='prog'?mtProgressHtml():t==='book'?mtPlaybookHtml():t==='film'?mtFilmHtml():mtTodayHtml();
+  $('view').innerHTML=h;if(t==='today')RT.draw();
+}
+function mtTodayHtml(){
   const d=mtDay(),s=mtSession(d),L=S.mt[d]||{},isToday=d===today(),w=mtWeek(d);
-  let h=modeSwitch()+`<div class="hdrrow"><div style="flex:1"><h1>Muay Thai</h1><div class="muted small">Solo striking // 12-week plan · starts ${fmtDate(mtStart())}</div></div><div class="jag" style="width:72px;height:72px">${JAG_BADGE}</div></div>
-  <div class="row" style="margin:10px 0"><button class="btn sm" onclick="mtMove(-1)">‹</button><div style="flex:1;text-align:center;font-family:var(--mono);letter-spacing:1px">${isToday?'TODAY · ':''}${fmtDate(d)}</div><button class="btn sm" onclick="mtMove(1)">›</button></div>`;
+  let h=`<div class="row" style="margin:10px 0"><button class="btn sm" onclick="mtMove(-1)">‹</button><div style="flex:1;text-align:center;font-family:var(--mono);letter-spacing:1px">${isToday?'TODAY · ':''}${fmtDate(d)}</div><button class="btn sm" onclick="mtMove(1)">›</button></div>`;
   h+=`<div id="rtBox" class="card" style="position:sticky;top:6px;z-index:15;display:none;border:1px solid var(--line)"></div>`;
-  // morning heart rate
-  h+=`<div class="card"><div class="row" style="gap:8px"><div style="flex:1"><div style="font-weight:700">Morning resting HR</div><div class="muted small">Before getting up, 1 min${mtRhrAvg(d)?' · 7-day avg '+Math.round(mtRhrAvg(d)):''}</div></div>
+  const stk=mtStreak();
+  h+=`<div class="card"><div class="row" style="gap:8px"><div style="flex:1"><div style="font-weight:700">Morning resting HR</div><div class="muted small">Before getting up, 1 min${mtRhrAvg(d)?' · 7-day avg '+Math.round(mtRhrAvg(d)):''}${stk?` · 🔥 ${stk}-day streak`:''}</div></div>
     <input class="cell" style="width:84px" inputmode="numeric" placeholder="bpm" value="${L.rhr??''}" onchange="mtSet('rhr',this.value)"></div></div>`;
   if(!s){
-    if(w<1){const pv=mtSession(mtStart());h+=`<div class="banner">PLAN STARTS ${fmtDate(mtStart()).toUpperCase()} — ${daysBetween(d,mtStart())} days out. Use the arrows to preview Week 1, or log resting HR now to build a baseline.</div>
+    if(w<1){const pv=mtSession(mtStart());h+=`<div class="banner">PLAN STARTS ${fmtDate(mtStart()).toUpperCase()} — ${daysBetween(d,mtStart())} days out. Use the arrows to preview Week 1, log resting HR to build a baseline, and rate your skills on PROGRESS to set your starting point.</div>
       <div class="card"><div style="font-weight:700">Week 1 theme: ${esc(pv.theme[0])}</div><div class="muted small" style="margin-top:4px">${esc(pv.theme[1])}</div><div class="small" style="margin-top:6px">Fight to study: <b>${esc(pv.fight[0])}</b> (${esc(pv.fight[1])})</div>
       <button class="btn blue" style="width:100%;margin-top:10px" onclick="MTD='${mtStart()}';vMuay()">Preview Week 1, Day 1 ›</button></div>`}
-    else h+=`<div class="banner">12-WEEK PLAN COMPLETE — export your data (Export tab) and bring it to Claude to build the next phase.</div>`;
-    h+=mtFilmCard();$('view').innerHTML=h;RT.draw();return}
-  const lf=mtLoadInfo(d);
+    else h+=`<div class="banner">12-WEEK PLAN COMPLETE — check PROGRESS, export your data (Export tab) and bring it to Claude to build the next phase.</div>`;
+    return h}
+  const lf=mtLoadInfo(d),tw=mtTestWeek(d);
   h+=`<div class="card"><div class="serial">MT-W${String(w).padStart(2,'0')}-${['MON','TUE','WED','THU','FRI','SAT','SUN'][s.dow]}<span class="bc" style="width:34px;height:9px"></span></div>
     <div class="row"><div style="flex:1"><div style="font-size:20px;font-weight:800">${esc(s.name)}</div><div class="muted small">Week ${w} of 12 · Block ${s.blk} · ${esc(s.W.wave)} · ${s.high?'HIGH day':s.type==='E'?'Recovery':'Low day'} · target effort ${s.rpe}</div></div>
     ${L.done?'<span class="chip" style="color:var(--green)">Done ✓</span>':''}</div>
     <div class="ex-target" style="margin-top:8px">Theme: ${esc(s.theme[0])}</div><div class="ex-note">${esc(s.theme[1])}</div>
-    <div class="small">Fight to study: <b>${esc(s.fight[0])}</b> <span class="muted">(${esc(s.fight[1])})</span>${S.mtFilm[s.fightIdx]?' <span style="color:var(--green)">studied ✓</span>':''}</div></div>`;
+    <div class="small">Fight to study: <b>${esc(s.fight[0])}</b> <span class="muted">(${esc(s.fight[1])})</span>${S.mtFilm[s.fightIdx]?' <span style="color:var(--green)">watched ✓</span>':''}</div></div>`;
   if(s.high&&s.liftDay)h+=`<div class="banner">LIFT DAY TOO — lift first, or strike 3+ hours later.</div>`;
   if(mtRhrAlert(d)&&(s.high||L.swap))h+=`<div class="banner">RECOVERY WARNING — resting HR 5+ bpm above your average two mornings running. ${L.swap?'Swapped to technique today.':`<button class="btn sm blue" style="margin-left:6px" onclick="mtFlag('swap')">Swap to technique</button>`}</div>`;
   if(lf&&lf.over)h+=`<div class="banner">LOAD SPIKE — this week ${lf.cur} vs ${Math.round(lf.avg)} average. Keep the rest of the week easy (stay within +20%).</div>`;
-  if((w===5||w===9)&&!MT_GATES[w-1].every((_,i)=>S.mtGate[(w-1)+'_'+i]))h+=`<div class="banner">BLOCK GATE NOT CONFIRMED — tick the week ${w-1} checklist below, or repeat the deload week. <button class="btn sm" style="margin-left:6px" onclick="mtRepeatDeload()">Repeat deload</button></div>`;
+  if((w===5||w===9)&&!MT_GATES[w-1].every((_,i)=>S.mtGate[(w-1)+'_'+i]))h+=`<div class="banner">BLOCK GATE NOT CONFIRMED — tick the week ${w-1} checklist, or repeat the deload week. <button class="btn sm" style="margin-left:6px" onclick="mtRepeatDeload()">Repeat deload</button></div>`;
+  if(tw&&s.dow===3)h+=`<div class="banner">TEST WEEK ${tw} — after your hardest round today, log heart rate and rope skips in the test card below.</div>`;
   // steps
-  h+=`<div class="card"><div class="row"><div style="font-weight:700;flex:1">Session</div>${s.type==='Q'?`<button class="mini" onclick="mtFlag('busy')">Back to full session</button>`:`<button class="mini" onclick="mtFlag('busy')">Busy day: 15 min</button>`}${L.swap&&!L.busy?` <button class="mini" onclick="mtFlag('swap')">Undo swap</button>`:''}</div>`;
+  h+=`<div class="card"><div class="row" style="gap:6px;flex-wrap:wrap"><div style="font-weight:700;flex:1">Session</div><button class="mini" onclick="mtCallerToggle()">Caller: ${S.mtCaller===false?'OFF':'ON'}</button>${s.type==='Q'?`<button class="mini" onclick="mtFlag('busy')">Full session</button>`:`<button class="mini" onclick="mtFlag('busy')">Busy day: 15 min</button>`}${L.swap&&!L.busy?`<button class="mini" onclick="mtFlag('swap')">Undo swap</button>`:''}</div>`;
   s.steps.forEach((p,i)=>{const dn=L.steps&&L.steps[i];const tm=p.rounds?(p.rounds>1?`${p.rounds} × ${p.work>=60?(p.work/60)+' min':p.work+' sec'}${p.rest?` / ${p.rest} sec rest`:''}`:(p.work>=60?(p.work/60)+' min':'')):'';
-    h+=`<div class="mtstep ${dn?'done':''}"><button class="chk" onclick="mtStep(${i})">${CHECK}</button><div style="flex:1"><div style="font-weight:700">${esc(p.name)} <span class="muted small" style="font-family:var(--mono)">${tm}</span></div>${p.note?`<div class="muted small">${esc(p.note)}</div>`:''}
+    h+=`<div class="mtstep ${dn?'done':''}"><button class="chk" onclick="mtStep(${i})">${CHECK}</button><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(p.name)} <span class="muted small" style="font-family:var(--mono)">${tm}</span></div>${p.note?`<div class="muted small">${esc(p.note)}</div>`:''}
+      ${p.call&&S.mtCaller!==false?'<div class="small" style="color:var(--gold)">🔊 Combo caller calls Ambush numbers in this step</div>':''}
       ${p.name==='Hard kicks'?mtKickHtml(s,L):''}</div>${p.rounds?`<button class="mini" onclick="RT.start(${i})">▶ Timer</button>`:''}</div>`});
-  if(s.type==='C')h+=`<div class="field" style="margin-top:8px"><label>The one fix I'm drilling</label><input value="${esc(L.fix||'')}" placeholder="e.g. right hand drops when I kick" onchange="mtFix(this.value)"></div>`;
+  h+=`<div class="row" style="margin-top:8px"><button class="mini" onclick="mtToggleOpen('combos')">${mtOpen.combos?'Hide':'Show'} combo numbers</button></div>${mtOpen.combos?mtCombosHtml():''}`;
+  if(s.type==='C'){h+=`<div style="margin-top:10px;font-weight:700">Fault I'm fixing</div><div class="chips">${MT_FAULTS.map((f,i)=>`<button class="mini ${L.fault===i?'on':''}" onclick="mtFault(${i})">${esc(f)}</button>`).join('')}</div>
+    <div class="field" style="margin-top:8px"><label>Note on the fix</label><input value="${esc(L.fix||'')}" placeholder="e.g. right hand drops when I kick" onchange="mtFix(this.value)"></div>`}
   h+=`</div>`;
+  if(tw)h+=mtTestCardHtml(tw,s.dow===2||s.dow===3);
   // log
   h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Log</div><div class="grid2">
     <div class="field"><label>Effort 0–10 (30 min after)</label><input id="mtRpe" inputmode="decimal" value="${L.rpe??''}" placeholder="${esc(s.rpe)}" onchange="mtSet('rpe',this.value)"></div>
@@ -1325,20 +1492,75 @@ function vMuay(){
   if(MT_GATES[w]&&s.dow>=5){h+=`<div class="card"><div style="font-weight:700">Gate to Block ${s.blk+1}</div><div class="muted small" style="margin-bottom:6px">Move up only if both are true. Otherwise repeat this deload week.</div>
     ${MT_GATES[w].map((g,i)=>`<label class="row small" style="gap:8px;padding:4px 0"><input type="checkbox" ${S.mtGate[w+'_'+i]?'checked':''} onchange="mtGate(${w},${i})"> ${esc(g)}</label>`).join('')}
     <button class="btn sm" style="margin-top:6px" onclick="mtRepeatDeload()">Repeat deload week</button></div>`}
-  h+=mtFilmCard();
-  $('view').innerHTML=h;RT.draw();
-}
+  return h}
+function mtCombosHtml(){return `<div class="combos">${MT_COMBOS.slice(1).map((c,i)=>`<div><b>${i+1}</b> ${esc(c[0])}<div class="muted small">${esc(c[1])}</div></div>`).join('')}</div><div class="muted small" style="margin-top:4px">Southpaw: jab = right, cross = left. Add a body shot, knee, kick or feint to any number — "3 plus left kick" is the Dutch finish.</div>`}
 function mtKickHtml(s,L){const t=s.kicks,kl=L.kl||0,kr=L.kr||0,c=v=>v>t?'var(--red)':v===t?'var(--green)':'#fff';
   return `<div class="row" style="gap:10px;margin-top:6px;flex-wrap:wrap">${[['l','Left',kl],['r','Right',kr]].map(([k,n,v])=>`<div class="row" style="gap:4px"><span class="small muted">${n}</span>
     <button class="mini" onclick="mtKick('${k}',-1)">−</button><b style="font-family:var(--mono);min-width:54px;text-align:center;color:${c(v)}">${v}/${t}</b><button class="mini" onclick="mtKick('${k}',1)">+1</button><button class="mini" onclick="mtKick('${k}',5)">+5</button></div>`).join('')}</div>${L.shin?'<div class="muted small">Halved for shin pain</div>':''}`}
-function mtFilmCard(){const n=Object.keys(S.mtFilm).length;let h=`<div class="card"><div class="row"><div style="font-weight:700;flex:1">Film list · ${n}/${MT_FIGHTS.length} studied</div><button class="mini" onclick="mtShowFilms=!mtShowFilms;vMuayKeep()">${mtShowFilms?'Hide':'Show'}</button></div>`;
-  if(mtShowFilms)h+=MT_FIGHTS.map((f,i)=>`<label class="row" style="gap:8px;padding:6px 0;border-bottom:1px solid var(--line);align-items:flex-start"><input type="checkbox" style="margin-top:3px" ${S.mtFilm[i]?'checked':''} onchange="mtFilmToggle(${i})"><div style="flex:1"><div style="font-weight:600">${i+1}. ${esc(f[0])}</div><div class="muted small">${esc(f[1])} · ${esc(f[2])}</div></div></label>`).join('')+`<div class="muted small" style="margin-top:6px">Analysts: Jack Slack, Lawrence Kenshin, Connor Ruebusch, Muay Thai Library.</div>`;
-  return h+'</div>'}
-function mtCharts(){const days=Object.keys(S.mt).filter(isDate).sort();if(!days.length)return '';
+function mtTestCardHtml(w,emph){const T=S.mtTests[w]||{},sc=S.mtScore[w]||{},drop=T.peak&&T.hr1?T.peak-T.hr1:null,base=S.mtTests[1]||{};
+  const inp=(k,ph,lab)=>`<div class="field"><label>${lab}</label><input inputmode="numeric" value="${T[k]??''}" placeholder="${ph}" onchange="mtTestSet(${w},'${k}',this.value)"></div>`;
+  return `<div class="card" style="${emph?'border:1px solid var(--blue)':''}"><div style="font-weight:700">Test week ${w} · monthly check</div><div class="muted small" style="margin-bottom:6px">Do it on Thursday after your hardest round, or any day this week. Week 1 is your baseline.</div>
+    <div class="grid2">${inp('peak','e.g. 175','HR at end of hardest round')}${inp('hr1','e.g. 135','HR 1 min later')}${inp('skips','count','Rope skips in 1 min')}${w===12?inp('sim','0–10','Fight-sim effort (5 × 3)'):''}</div>
+    <div class="muted small" style="margin-top:6px;font-family:var(--mono)">7-DAY RESTING HR ${mtRhr7(today())??'—'}${drop!=null?` · RECOVERY DROP ${drop} bpm ${drop>=40?'✓ target 40+':'(target 40+)'}`:''}</div>
+    <div style="font-weight:700;margin-top:12px">Video scorecard</div><div class="muted small">Film one full bag round, then rate each check 1–5.</div>
+    ${MT_CHECKS.map(([k,l])=>`<div class="row" style="gap:6px;margin-top:6px;flex-wrap:wrap"><div class="small" style="flex:1;min-width:140px">${esc(l)}</div><div class="rate">${[1,2,3,4,5].map(n=>`<button class="${sc[k]===n?'on':''}" onclick="mtScoreSet(${w},'${k}',${n})">${n}</button>`).join('')}</div></div>`).join('')}
+    ${mtScoreAvg(w)?`<div class="muted small" style="margin-top:6px;font-family:var(--mono)">SCORE ${mtScoreAvg(w).toFixed(1)} / 5${w>1&&mtScoreAvg(1)?` · WEEK 1 ${mtScoreAvg(1).toFixed(1)}`:''}</div>`:''}</div>`}
+function mtProgressHtml(){
+  const ad=mtAdherence(),stk=mtStreak(),days=Object.keys(S.mt).filter(isDate).sort();
+  let h=`<div class="grid2" style="margin-top:10px"><div class="stat"><div class="v">${stk}</div><div class="l">Day streak</div></div><div class="stat"><div class="v">${ad?ad.done+' / '+ad.planned:'—'}</div><div class="l">Sessions done / planned</div></div>
+    <div class="stat"><div class="v">${Object.keys(S.mtFilm).length}/${MT_FIGHTS.length}</div><div class="l">Fights studied</div></div><div class="stat"><div class="v">${Math.round(mtSkillAvgOn(today())/3*100)}%</div><div class="l">Curriculum mastered</div></div></div>`;
+  // tests table
+  const row=(l,f,good)=>{const v=MT_TESTWEEKS.map(w=>f(w));const b=v.find(x=>x!=null);return `<tr><td style="text-align:left">${l}</td>${v.map((x,i)=>`<td>${x==null?'—':x}${i>0&&x!=null&&b!=null&&x!==b&&v.indexOf(b)<i?`<div class="small" style="color:${(x-b)*good>0?'var(--green)':'var(--red)'}">${x-b>0?'+':''}${Math.round((x-b)*10)/10}</div>`:''}</td>`).join('')}</tr>`};
+  const wkEnd=w=>addDays(mtStart(),w*7-1);
+  h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Monthly tests</div><table class="ttab"><tr><th style="text-align:left">Test</th>${MT_TESTWEEKS.map(w=>`<th>Wk ${w}</th>`).join('')}</tr>
+    ${row('Resting HR (7-day)',w=>mtWeek(today())>=w?mtRhr7(wkEnd(w)<today()?wkEnd(w):today()):null,-1)}
+    ${row('HR recovery drop',w=>{const T=S.mtTests[w];return T&&T.peak&&T.hr1?T.peak-T.hr1:null},1)}
+    ${row('Rope skips / min',w=>{const T=S.mtTests[w];return T&&T.skips!=null?T.skips:null},1)}
+    ${row('Video score /5',w=>{const a=mtScoreAvg(w);return a?Math.round(a*10)/10:null},1)}
+    ${row('Fight-sim effort',w=>{const T=S.mtTests[w];return T&&T.sim!=null?T.sim:null},-1)}</table>
+    <div class="muted small" style="margin-top:6px">Green = better than your first test. Enter tests on the TODAY screen during weeks 1, 4, 8 and 12.</div></div>`;
+  // skill chart + scorecard chart
+  const pts=[];const ds=new Set();Object.values(S.mtSkills).forEach(a=>a.forEach(x=>ds.add(x.d)));[...ds].sort().forEach(d=>pts.push({x:new Date(d+'T12:00:00').getTime(),y:Math.round(mtSkillAvgOn(d)*100)/100}));
+  h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Skill level over time</div>${pts.length?lineChart([{name:'Curriculum mastered (% of all skills at Sharp)',color:'#f5d33a',pts:pts.map(p=>({x:p.x,y:Math.round(p.y/3*1000)/10}))}],{}):'<div class="muted small">Rate your skills below to start the chart.</div>'}</div>`;
+  // faults
+  const fc={};days.forEach(d=>{const f=S.mt[d].fault;if(f!=null)fc[f]=(fc[f]||0)+1});const fk=Object.keys(fc).sort((a,b)=>fc[b]-fc[a]);
+  h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Faults you've worked on</div>${fk.length?fk.map(k=>`<div class="row small" style="margin:4px 0"><div style="flex:1">${esc(MT_FAULTS[k])}</div><div style="width:40%;background:#14171c;height:12px"><div style="width:${fc[k]/fc[fk[0]]*100}%;background:var(--red);height:12px"></div></div><div style="width:30px;text-align:right">${fc[k]}</div></div>`).join('')+'<div class="muted small" style="margin-top:4px">A fault that keeps coming back is worth a private lesson.</div>':'<div class="muted small">Pick a fault on Film &amp; fix days (Wednesdays).</div>'}</div>`;
+  h+=mtCharts(true);
+  // skill checklist
+  h+=`<h2>Skill checklist <span class="muted small">Ambush Level 1</span></h2><div class="muted small">Tap a level. 0 new · 1 learning · 2 solid · 3 sharp. Re-rate every few weeks; the chart above tracks it. Clinch is partner work — rate it after a class or private.</div>`;
+  MT_SKILLS.forEach(([cat,list])=>{const avg=list.reduce((s,n)=>s+mtSkillLevel(cat+'|'+n),0)/list.length;const open=mtOpen['sk_'+cat];
+    h+=`<div class="card"><div class="row" onclick="mtToggleOpen('sk_${cat.replace(/'/g,'')}')" style="cursor:pointer"><div style="font-weight:700;flex:1">${esc(cat)}</div><div class="muted small" style="font-family:var(--mono)">${avg.toFixed(1)} / 3 ${open?'▾':'▸'}</div></div>
+      <div style="height:6px;background:#14171c;margin-top:6px"><div style="height:6px;width:${avg/3*100}%;background:var(--gold)"></div></div>
+      ${open?list.map(n=>{const id=cat+'|'+n,v=mtSkillLevel(id);return `<div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><div class="small" style="flex:1;min-width:120px">${esc(n)}</div><div class="rate">${[0,1,2,3].map(x=>`<button class="${v===x?'on':''}" title="${MT_LEVELS[x]}" onclick="mtRate('${id.replace(/'/g,"\\'")}',${x})">${x}</button>`).join('')}</div></div>`}).join(''):''}</div>`});
+  return h}
+function mtFilmHtml(){const cat=S.mtFilmCat||'all',n=Object.keys(S.mtFilm).length;
+  const weekOf={};for(let w=1;w<=12;w++)weekOf[MT_THEMES[w][2]]=w;
+  const list=MT_FIGHTS.map((f,i)=>({f,i})).filter(({f,i})=>cat==='all'||(cat==='todo'?!S.mtFilm[i]:f[3].split(' ').includes(cat)));
+  let h=`<div class="card"><div class="row"><div style="font-weight:700;flex:1">Film library</div><div class="muted small" style="font-family:var(--mono)">${n}/${MT_FIGHTS.length} WATCHED</div></div>
+    <div style="height:6px;background:#14171c;margin-top:6px"><div style="height:6px;width:${n/MT_FIGHTS.length*100}%;background:var(--green)"></div></div>
+    <div class="chips" style="margin-top:8px">${MT_FCATS.map(([k,l])=>`<button class="mini ${cat===k?'on':''}" onclick="mtFilmCat('${k}')">${l}</button>`).join('')}</div>
+    <div class="muted small" style="margin-top:6px">Watch once for fun, then again for the "watch for" item only. Rows 1–8 are closest to your build.</div></div>`;
+  h+=list.map(({f,i})=>`<div class="card film ${S.mtFilm[i]?'seen':''}"><div class="row" style="gap:10px;align-items:flex-start"><input type="checkbox" style="margin-top:4px;width:20px;height:20px" ${S.mtFilm[i]?'checked':''} onchange="mtFilmToggle(${i})">
+    <div style="flex:1;min-width:0"><div style="font-weight:700">${i+1}. ${esc(f[0])}</div><div class="muted small">${esc(f[1])}${weekOf[i]?` · <span style="color:var(--gold)">Week ${weekOf[i]} fight</span>`:''}${f[3].includes('south')?' · southpaw':''}</div>
+    <div class="small" style="margin-top:4px">Watch for: ${esc(f[2])}</div>
+    <input class="filmnote" placeholder="Your notes…" value="${esc(S.mtFilmNote[i]||'')}" onchange="mtFilmNote(${i},this.value)"></div></div></div>`).join('')||'<div class="muted small">Nothing here.</div>';
+  return h+`<div class="muted small" style="margin:10px 0">Analysts: Jack Slack, Lawrence Kenshin, Connor Ruebusch, Sylvie's Muay Thai Library (8limbs.us).</div>`}
+function mtPlaybookHtml(){let h=`<div class="card"><div style="font-weight:700">Ambush combo numbers (southpaw)</div>${mtCombosHtml()}</div>
+  <div class="muted small" style="margin:6px 0 10px">Coach Jason &amp; Coach Elton's how-tos from the Ambush blog, mirrored for a southpaw. Tap one to open. "Clinch happens": train it every week.</div>`;
+  let cat='';MT_BOOK.forEach((b,i)=>{if(b.c!==cat){cat=b.c;h+=`<h2>${esc(cat)}</h2>`}const o=mtOpen['b'+i];
+    h+=`<div class="card"><div class="row" style="cursor:pointer" onclick="mtToggleOpen('b${i}')"><div style="font-weight:700;flex:1">${esc(b.t)}</div><span class="muted">${o?'▾':'▸'}</span></div>
+      ${o?`${b.w?`<div class="small" style="margin-top:6px">${esc(b.w)}</div>`:''}${b.h?`<ul class="book">${b.h.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+      ${b.m?`<div class="small"><b>Mistakes:</b> ${esc(b.m)}</div>`:''}${b.d?`<div class="small" style="margin-top:4px;color:var(--gold)"><b>Solo drill:</b> ${esc(b.d)}</div>`:''}${b.f?`<div class="muted small" style="margin-top:4px">Watch: ${esc(b.f)}</div>`:''}`:''}</div>`});
+  h+=`<h2>Gear the gym recommends</h2><div class="card small"><ul class="book"><li>Wraps: 180" Mexican-style (no gel or slip-on)</li><li>Bag gloves: Fairtex BGV9, 10–12 oz — lighter lets you drill at full speed</li><li>Sparring gloves: Twins 16 oz (never on the bag)</li><li>Shins: Windy or Fairtex, to the bottom of the kneecap</li><li>Steel Thai cup, SISU or Damage Control mouthguard, Venum elbow pads</li></ul></div>
+  <h2>Strength the gym likes</h2><div class="card small"><ul class="book"><li>Kettlebell swings first (striking is ballistic), pull-ups next (clinch is a grind)</li><li>Simple &amp; Sinister: 100 one-hand swings &lt; 5 min + 10 get-ups &lt; 10 min</li><li>Start at 16 kg (~your 35 lb bell), work up to 24 kg. Your recomp lifting stays as is.</li></ul></div>
+  <h2>Resources</h2><div class="card small"><ul class="book"><li>8limbs.us (Sylvie), Jack Slack, Lawrence Kenshin, Heatrick S&amp;C, Muay-Thai-Guy, Muay Thai Scholar, Striking Corner</li><li>Podcasts: Don Heatrick on Muay Thai Guy #69 · John Wayne Parr on JRE #616</li><li>YouTube knee fighters: Dieselnoi, Langsuan, Petchboonchu, Rajasak, Yodwicha</li><li>Instagram: @ambushcoach (class notes)</li></ul></div>`;
+  return h}
+function mtCharts(inMt){const days=Object.keys(S.mt).filter(isDate).sort();if(!days.length)return inMt?'<div class="card muted small">Charts appear once you log resting HR or a session.</div>':'';
   const rhr=days.filter(d=>S.mt[d].rhr).map(d=>({x:new Date(d+'T12:00:00').getTime(),y:S.mt[d].rhr}));
-  const wk={};days.forEach(d=>{const w=mtWeek(d);if(w<1)return;const x=S.mt[d];wk[w]=wk[w]||{load:0,kicks:0};if(x.rpe&&x.min)wk[w].load+=x.rpe*x.min;wk[w].kicks+=(x.kl||0)+(x.kr||0)});
+  const wk={};days.forEach(d=>{const w=mtWeek(d);if(w<1)return;const x=S.mt[d];wk[w]=wk[w]||{load:0,kicks:0,done:0};if(x.rpe!=null&&x.min)wk[w].load+=x.rpe*x.min;wk[w].kicks+=(x.kl||0)+(x.kr||0);if(x.done)wk[w].done++});
   const keys=Object.keys(wk).map(Number).sort((a,b)=>a-b);const bar=(f,c,u)=>{const mx=Math.max(1,...keys.map(k=>wk[k][f]));return keys.map(k=>`<div class="row small" style="margin:4px 0"><div style="width:54px" class="muted">Wk ${k}</div><div style="flex:1;background:#14171c;height:14px"><div style="width:${wk[k][f]/mx*100}%;background:${c};height:14px"></div></div><div style="width:64px;text-align:right">${wk[k][f]}${u}</div></div>`).join('')||'<div class="muted small">No sessions logged yet.</div>'};
-  return `<h2>Muay Thai</h2><div class="card"><div style="font-weight:700;margin-bottom:6px">Morning resting HR</div>${lineChart([{name:'Resting HR (bpm)',color:'#ff3b3b',pts:rhr}],{empty:'Log resting HR on the Muay Thai screen.'})}</div>
+  return `${inMt?'':'<h2>Muay Thai</h2>'}<div class="card"><div style="font-weight:700;margin-bottom:6px">Morning resting HR</div>${lineChart([{name:'Resting HR (bpm)',color:'#ff3b3b',pts:rhr}],{empty:'Log resting HR on the Muay Thai screen.'})}</div>
+    <div class="card"><div style="font-weight:700;margin-bottom:6px">Sessions done per week</div>${bar('done','var(--green)','/7')}</div>
     <div class="card"><div style="font-weight:700;margin-bottom:6px">Weekly load (effort × minutes)</div>${bar('load','var(--blue)','')}</div>
     <div class="card"><div style="font-weight:700;margin-bottom:6px">Hard kicks per week (both legs)</div>${bar('kicks','#f5d33a','')}</div>`}
 
