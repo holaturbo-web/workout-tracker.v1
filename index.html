@@ -520,7 +520,7 @@ function repair(raw){
       done:!!x.done,busy:!!x.busy,swap:!!x.swap,shin:!!x.shin,fix:typeof x.fix==='string'?x.fix.slice(0,300):'',steps:isObj(x.steps)?x.steps:{},t:num(x.t,0)}}
   o.mtFilm={};if(isObj(s.mtFilm))for(const k in s.mtFilm)if(s.mtFilm[k]===true&&+k>=0&&+k<40)o.mtFilm[k]=true;
   o.mtGate={};if(isObj(s.mtGate))for(const k in s.mtGate)if(s.mtGate[k]===true)o.mtGate[k]=true;
-  for(const d in o.mt){const f=s.mt[d].fault;o.mt[d].fault=Number.isInteger(f)&&f>=0&&f<20?f:null}
+  for(const d in o.mt){const f=s.mt[d].fault;o.mt[d].fault=Number.isInteger(f)&&f>=0&&f<20?f:null;o.mt[d].lmp=num(s.mt[d].lmp,null,0,200);o.mt[d].lmr=num(s.mt[d].lmr,null,0,200)}
   o.mtFilmNote={};if(isObj(s.mtFilmNote))for(const k in s.mtFilmNote)if(typeof s.mtFilmNote[k]==='string'&&+k>=0&&+k<80)o.mtFilmNote[k]=s.mtFilmNote[k].slice(0,400);
   o.mtFilmCat=typeof s.mtFilmCat==='string'?s.mtFilmCat:'all';o.mtTab=['today','prog','book','film'].includes(s.mtTab)?s.mtTab:'today';o.mtCaller=s.mtCaller!==false;
   o.mtSkills={};if(isObj(s.mtSkills))for(const k in s.mtSkills){if(!Array.isArray(s.mtSkills[k]))continue;const h=s.mtSkills[k].filter(x=>isObj(x)&&isDate(x.d)&&[0,1,2,3].includes(x.v)).map(x=>({d:x.d,v:x.v}));if(h.length)o.mtSkills[String(k).slice(0,80)]=h.slice(-60)}
@@ -1005,7 +1005,7 @@ function buildExport(){
     exercise_notes:S.notes,personal_records:prMap().bests,
     muay_thai:{plan_start:mtStart(),stance:'southpaw',film_studied:Object.keys(S.mtFilm).map(i=>MT_FIGHTS[i]&&MT_FIGHTS[i][0]),film_notes:Object.fromEntries(Object.entries(S.mtFilmNote).map(([i,v])=>[MT_FIGHTS[i]?MT_FIGHTS[i][0]:i,v])),gates:S.mtGate,
       streak:mtStreak(),adherence:mtAdherence(),monthly_tests:S.mtTests,video_scorecard:S.mtScore,skills_now:Object.fromEntries(MT_SKILL_IDS.map(id=>[id,mtSkillLevel(id)])),skill_history:S.mtSkills,
-      days:Object.keys(S.mt).sort().map(d=>{const x=S.mt[d],s=mtSession(d);return {date:d,week:mtWeek(d),session:s?s.name:null,high_day:s?s.high:null,resting_hr:x.rhr,effort:x.rpe,minutes:x.min,load:x.rpe!=null&&x.min?x.rpe*x.min:null,kicks_left:x.kl,kicks_right:x.kr,kick_target:s?s.kicks:null,done:x.done,busy_day:x.busy,swapped_for_recovery:x.swap,shin_pain:x.shin,fault:x.fault!=null?MT_FAULTS[x.fault]:null,fix:x.fix}})},
+      days:Object.keys(S.mt).sort().map(d=>{const x=S.mt[d],s=mtSession(d);return {date:d,week:mtWeek(d),session:s?s.name:null,high_day:s?s.high:null,resting_hr:x.rhr,effort:x.rpe,minutes:x.min,load:x.rpe!=null&&x.min?x.rpe*x.min:null,kicks_left:x.kl,kicks_right:x.kr,kick_target:s?s.kicks:null,done:x.done,busy_day:x.busy,swapped_for_recovery:x.swap,shin_pain:x.shin,fault:x.fault!=null?MT_FAULTS[x.fault]:null,fix:x.fix,landmine_press_lb:x.lmp,landmine_rotation_lb:x.lmr}})},
     nutrition:{targets:S.targets,checkins:S.checkins,saved_foods:S.foods,
       days:Object.keys(S.food||{}).sort().map(d=>({date:d,training_day:isTrainDay(d),totals:totals(d),water_glasses:(S.food[d]||{}).water||0,ate_out:(S.food[d].items||[]).filter(i=>i.src==='out').length,items:S.food[d].items}))},
     maxes_inputs:S.maxes,next_block_retest:S.maxes.retest,bodyweight_log:S.bw,lift_summary:summary,
@@ -1213,6 +1213,8 @@ const MT_BOOK=[
  {c:'Knees, clinch & elbows',t:'Dieselnoi\'s knee mechanics',h:['The knee rises from below and drives up with a hidden internal twist','Torso in a "C" — never lean back like a plank; rotate the hips','Standing heel lifts onto the ball as the hip turns','Arms clamp inward and pull down onto the knee; target solar plexus with the knee itself','"Set up left, kill with right" — for you: light right knees, then a full left knee'],m:'Leaning back, stabbing the knee out, rocking the hips, pulling arms outward, aiming too high.'},
  {c:'Knees, clinch & elbows',t:'Clinch position and control',h:['Straight-arm frame keeps distance and breaks balance; keep it high to cover you','Vs bigger opponents (Yodsanklai): underhook, reverse cross-face, inside bicep control','Flow beats talent (Pot controlling Saenchai)'],f:'Oley vs Chamuakpet'},
  {c:'Knees, clinch & elbows',t:'Sweeps (partner work)',h:['Knee-counter sweep: as their knee rises, pull down on the standing-leg side, push and pull at once','From double underhooks: shove; when they shove back, pull one side and pivot','Body-lock throw: hands below their ribs, hips in, bump, lift, twist','Escape a double collar tie: straighten your back and step in, pull one bicep down'],m:'Staying in fighting stance (exposes your inner thigh), leaving space, pushing nonstop.'},
+ {c:'Landmine power (high days)',t:'Landmine punch-press',w:'An explosive one-arm press from your fight stance — the punching line with load. Done fresh, right after the warm-up, on Mon/Thu.',h:['Fight stance, bar end at shoulder height in the punching hand','Drive off the back foot, turn the hip, punch the bar up and out','Fast on the way up, control it back','Left (power) side gets an extra set','Block 1: 5 smooth reps · Block 2: 4 fast · Block 3: 3 explosive'],m:'Grinding slow reps (that\'s strength work, not power), shrugging, leaning back.',d:'If the bar slows, the set is over. Add 5–10 lb only when every rep stays fast.'},
+ {c:'Landmine power (high days)',t:'Rotational landmine throw',w:'Turn and drive the bar across your body like a kick or hook — trains the hip rotation that drives kick power.',h:['Both hands on the bar end, arms long','Rotate from the hips and pivot the back foot, like the standing-foot swivel in a kick','Ribs stay stacked over hips — no twisting through the low back','Same reps as the punch-press, each way'],m:'Turning only the arms, bending sideways at the waist, going heavy with a sore back.',d:'Warm up with 5 slow reps each way. Stop at any low-back pain.'},
  {c:'Knees, clinch & elbows',t:'Elbows (Condit)',w:'Rising elbow, then spinning back elbow.',d:'Off a jab or a missed punch: rising elbow then spinning back elbow on the bag, controlled.',f:'Condit vs Alves (2015)'}];
 
 /* =========================================================
@@ -1341,7 +1343,10 @@ function mtSession(d){
   const blk=Math.ceil(w/4),th=MT_THEMES[w],steps=[];let kicks=null,rpe='4–5';
   const st=(name,rounds,work,rest,note,call)=>steps.push({name,rounds,work,rest,note:note||'',call:call||null});
   if(type==='A'){rpe=blk===1?'6':blk===2?'7–8':'8';kicks=L.shin?Math.ceil(W.kicks/2):W.kicks;
-    st('Rope',1,300,0,'Easy, last 30 sec fast');st('Shadowboxing',2,180,60,'70% speed on: '+th[0],'shadow');
+    st('Rope',1,180,0,'Easy, last 30 sec fast');st('Shadowboxing',2,180,60,'70% speed on: '+th[0],'shadow');
+    {const dl=/Deload/.test(W.wave),sets=dl?2:3,reps=blk===1?'5 smooth':blk===2?'4 fast':'3 explosive';
+     st('Landmine punch-press',sets,20,60,`${sets} × ${reps} per side from fight stance; an extra set on the LEFT (power side). Every rep fast — stop if it slows`);
+     st('Rotational landmine throw',sets,20,60,`${sets} × ${reps} each way. Turn from the hips and pivot the back foot like a kick; ribs stay stacked, no low-back twist`)}
     if(thu&&W.hiit){st('Technical bag',2,180,60,th[0],'bag');st('HIIT',W.hiit,20,40,'All-out punches + kicks 20 sec, easy shadowboxing 40 sec')}
     else if(thu&&W.tech){st('Technical bag',2,180,60,th[0]+' — no HIIT this week','bag')}
     else if(thu&&W.sim){st(W.test?'TEST: fight simulation':'Fight simulation',W.sim,180,60,'Build: technical → setups → pressure & power → clinch & knees → everything'+(W.burst?'. Last round in 30-sec bursts':'')+(W.test?'. Log effort and heart rate after':''),'sim')}
@@ -1476,7 +1481,7 @@ function mtTodayHtml(){
   s.steps.forEach((p,i)=>{const dn=L.steps&&L.steps[i];const tm=p.rounds?(p.rounds>1?`${p.rounds} × ${p.work>=60?(p.work/60)+' min':p.work+' sec'}${p.rest?` / ${p.rest} sec rest`:''}`:(p.work>=60?(p.work/60)+' min':'')):'';
     h+=`<div class="mtstep ${dn?'done':''}"><button class="chk" onclick="mtStep(${i})">${CHECK}</button><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(p.name)} <span class="muted small" style="font-family:var(--mono)">${tm}</span></div>${p.note?`<div class="muted small">${esc(p.note)}</div>`:''}
       ${p.call&&S.mtCaller!==false?'<div class="small" style="color:var(--gold)">🔊 Combo caller calls Ambush numbers in this step</div>':''}
-      ${p.name==='Hard kicks'?mtKickHtml(s,L):''}</div>${p.rounds?`<button class="mini" onclick="RT.start(${i})">▶ Timer</button>`:''}</div>`});
+      ${p.name==='Hard kicks'?mtKickHtml(s,L):''}${/^(Landmine|Rotational landmine)/.test(p.name)?mtLmHtml(p.name,L):''}</div>${p.rounds?`<button class="mini" onclick="RT.start(${i})">▶ Timer</button>`:''}</div>`});
   h+=`<div class="row" style="margin-top:8px"><button class="mini" onclick="mtToggleOpen('combos')">${mtOpen.combos?'Hide':'Show'} combo numbers</button></div>${mtOpen.combos?mtCombosHtml():''}`;
   if(s.type==='C'){h+=`<div style="margin-top:10px;font-weight:700">Fault I'm fixing</div><div class="chips">${MT_FAULTS.map((f,i)=>`<button class="mini ${L.fault===i?'on':''}" onclick="mtFault(${i})">${esc(f)}</button>`).join('')}</div>
     <div class="field" style="margin-top:8px"><label>Note on the fix</label><input value="${esc(L.fix||'')}" placeholder="e.g. right hand drops when I kick" onchange="mtFix(this.value)"></div>`}
@@ -1494,6 +1499,13 @@ function mtTodayHtml(){
     <button class="btn sm" style="margin-top:6px" onclick="mtRepeatDeload()">Repeat deload week</button></div>`}
   return h}
 function mtCombosHtml(){return `<div class="combos">${MT_COMBOS.slice(1).map((c,i)=>`<div><b>${i+1}</b> ${esc(c[0])}<div class="muted small">${esc(c[1])}</div></div>`).join('')}</div><div class="muted small" style="margin-top:4px">Southpaw: jab = right, cross = left. Add a body shot, knee, kick or feint to any number — "3 plus left kick" is the Dutch finish.</div>`}
+// landmine load: plate weight on the bar end, per exercise; shows last time + progression cue
+function mtLmKey(n){return /punch/i.test(n)?'lmp':'lmr'}
+function mtLmLast(k,d){const ds=Object.keys(S.mt).filter(x=>isDate(x)&&x<d&&S.mt[x][k]).sort();return ds.length?S.mt[ds[ds.length-1]][k]:null}
+function mtLmSet(n,v){const k=mtLmKey(n);let x=v===''?null:+v;if(x!=null&&(!isFinite(x)||x<0||x>200)){toast('Plate weight 0–200 lb');vMuayKeep();return}const L=mtLog(mtDay());L[k]=x;save();vMuayKeep()}
+function mtLmHtml(n,L){const k=mtLmKey(n),last=mtLmLast(k,mtDay());return `<div class="row" style="gap:8px;margin-top:6px;flex-wrap:nowrap"><span class="small muted" style="white-space:nowrap">Plate on bar</span>
+  <input class="cell" style="width:70px;height:32px;flex:none" inputmode="decimal" value="${L[k]??''}" placeholder="${last??'10'}" onchange="mtLmSet('${n}',this.value)"><span class="small muted">lb${last!=null?' · last '+last:''}</span></div>
+  <div class="muted small">Add 5–10 lb only when every rep stays fast</div>`}
 function mtKickHtml(s,L){const t=s.kicks,kl=L.kl||0,kr=L.kr||0,c=v=>v>t?'var(--red)':v===t?'var(--green)':'#fff';
   return `<div class="row" style="gap:10px;margin-top:6px;flex-wrap:wrap">${[['l','Left',kl],['r','Right',kr]].map(([k,n,v])=>`<div class="row" style="gap:4px"><span class="small muted">${n}</span>
     <button class="mini" onclick="mtKick('${k}',-1)">−</button><b style="font-family:var(--mono);min-width:54px;text-align:center;color:${c(v)}">${v}/${t}</b><button class="mini" onclick="mtKick('${k}',1)">+1</button><button class="mini" onclick="mtKick('${k}',5)">+5</button></div>`).join('')}</div>${L.shin?'<div class="muted small">Halved for shin pain</div>':''}`}
