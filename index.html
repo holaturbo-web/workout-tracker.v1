@@ -12,312 +12,209 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
+/* OCELOTL // CORP — calm design system (Apple clarity + Porsche restraint)
+   One sans for words, one mono for numbers. Four text sizes: 30 title · 20 section · 16 body · 13 caption.
+   One accent (red). Green = done. Everything else is grayscale. Tap targets ≥ 44 px. */
 :root{
-  --bg:#16181d; --card:#22262e; --card2:#2b3039; --line:#353b46; --text:#f2f4f7; --muted:#8b93a1;
-  --blue:#3fa0ff; --green:#2fca6c; --red:#ff5a5f; --gold:#e6b93c;
-  --bench:#e6b93c; --hinge:#4f9dff; --squat:#3fcf7a; --ohp:#ff9a4a;
+  --bg:#0b0c0e; --card:#15171a; --card2:#1e2125; --line:#2a2d33; --text:#f5f5f7; --muted:#8e8e93; --faint:#5c5f66;
+  --red:#e2142d; --green:#30d158; --gold:#d4a84b; --blue:#9cb8d6; --mag:#e2142d; --head:#f5f5f7;
+  --bench:#d4a84b; --hinge:#9cb8d6; --squat:#30d158; --ohp:#e2142d;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",Segoe UI,Roboto,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --r:14px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Segoe UI,Roboto,Arial,sans-serif;font-size:16px}
-body{padding:env(safe-area-inset-top) 0 calc(150px + env(safe-area-inset-bottom)) 0;overscroll-behavior-y:none}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{padding:0 0 calc(96px + env(safe-area-inset-bottom));overscroll-behavior-y:none}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
-input{font:inherit;color:var(--text)}
-.wrap{max-width:560px;margin:0 auto;padding:12px 14px 24px}
-h1{font-size:26px;font-weight:800;margin:6px 0 2px;letter-spacing:-.3px;text-transform:uppercase}
-h2{font-size:18px;margin:18px 0 8px}
+input,select,textarea{font:inherit;color:var(--text)}
+.wrap{max-width:560px;margin:0 auto;padding:4px 16px 24px}
+#view,#sheet{overflow-wrap:anywhere}
+#view *,#sheet *{min-width:0}
+#view .btn,#sheet .btn,#view .mini,#sheet .mini{min-width:44px}
+h1{font-size:30px;font-weight:700;letter-spacing:-.4px;margin:4px 0 2px;line-height:1.15}
+h2{font-size:20px;font-weight:600;letter-spacing:-.2px;margin:26px 0 8px}
+h2 .muted{font-weight:400}
 .muted{color:var(--muted)} .small{font-size:13px}
 .row{display:flex;align-items:center;gap:10px}
 .spacer{flex:1}
-.btn{background:var(--card2);padding:10px 14px;border-radius:10px;font-weight:600}
-.btn.primary{background:var(--green);color:#06210f}
-.btn.blue{background:var(--blue);color:#fff}
-.btn.danger{background:#3a2226;color:#ff8d91}
-.btn.sm{padding:6px 10px;font-size:14px;border-radius:8px}
-.chip{background:var(--card2);padding:6px 10px;border-radius:999px;font-size:13px;color:var(--muted)}
-.card{background:var(--card);border-radius:14px;padding:12px;margin:12px 0}
-.ex-title{font-weight:700;font-size:17px;color:var(--blue);display:flex;align-items:center;gap:8px}
-.ex-title .dot{width:10px;height:10px;border-radius:50%;flex:none}
-.ex-note{font-size:13px;color:var(--muted);margin:4px 0 8px;line-height:1.35}
-.ex-target{font-size:13px;color:var(--gold);margin:2px 0 6px;font-weight:600}
-table{width:100%;border-collapse:separate;border-spacing:0 6px}
-th{font-size:13px;color:var(--text);font-weight:700;text-align:center;padding:0 2px}
-th:first-child,td:first-child{width:38px}
-td{text-align:center;padding:0 2px}
-.setno{background:var(--card2);border-radius:8px;height:38px;line-height:38px;font-weight:700}
-.prev{color:var(--muted);font-size:13px;white-space:nowrap}
-.cell{width:100%;height:38px;border-radius:8px;border:0;background:#14171c;text-align:center;font-weight:700;font-size:17px}
-.cell::placeholder{color:#5d6573;font-weight:600}
-.chk{width:42px;height:38px;border-radius:8px;background:var(--card2);display:flex;align-items:center;justify-content:center;margin:0 auto}
-.chk svg{width:20px;height:20px;stroke:#9aa3b1}
-tr.done .chk{background:var(--green)} tr.done .chk svg{stroke:#06210f}
-tr.done .cell,tr.done .setno{background:#1f3a2a}
-.addset{width:100%;background:var(--card2);border-radius:8px;padding:8px;font-weight:600;font-size:14px;margin-top:2px}
-.warm{background:transparent;border:1px dashed var(--line);color:var(--muted);font-size:14px}
-.tabbar{position:fixed;left:0;right:0;bottom:0;background:#1b1e24;border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:20}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted);padding:4px 0}
-.tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2}
-.tab.on{color:var(--blue)}
-.timer{position:fixed;left:12px;right:12px;bottom:calc(72px + env(safe-area-inset-bottom));background:var(--blue);color:#fff;border-radius:14px;padding:10px 14px;display:none;align-items:center;gap:10px;z-index:30;box-shadow:0 6px 24px rgba(0,0,0,.4);max-width:536px;margin:0 auto}
-.timer.show{display:flex}
-.timer .t{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
-.timer.over{background:var(--green);color:#06210f}
-.sess{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:var(--card);margin:8px 0}
-.sess .st{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
-.sess.done .st{background:var(--green);border-color:var(--green);color:#06210f}
-.sess.prog .st{border-color:var(--gold);color:var(--gold)}
-.sess.next{outline:2px solid var(--blue)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-.field input{width:100%;height:42px;border-radius:10px;border:0;background:#14171c;padding:0 10px;font-size:17px;font-weight:700}
-.stat{background:var(--card2);border-radius:10px;padding:10px}
-.stat .v{font-size:22px;font-weight:800}
-.stat .l{font-size:12px;color:var(--muted)}
-select{background:var(--card2);color:var(--text);border:0;border-radius:10px;padding:10px;font:inherit;width:100%}
-.banner{background:#2a2f1e;border:1px solid #5b6130;color:#e9e3a5;border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
-.toast{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:50;display:none;max-width:90%}
-textarea{width:100%;height:140px;background:#14171c;color:var(--text);border:0;border-radius:10px;padding:10px;font:12px ui-monospace,Menlo,monospace}
-svg.chart text{fill:var(--muted);font-size:11px}
-.legend{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-top:4px}
-.legend i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
-.setno.w{color:#f0a35a;background:#3a2d22}
-.setno.prset{background:var(--gold);color:#2a2000;font-size:13px}
-tr.wu .cell{font-size:15px;color:var(--muted)}
-.prb{display:inline-block;background:var(--gold);color:#2a2000;font-size:10px;font-weight:800;border-radius:5px;padding:1px 4px;margin-left:4px;vertical-align:middle}
-.ex-title{cursor:pointer}
-.ex-tools{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 6px}
-.mini{background:var(--card2);color:var(--muted);font-size:12px;font-weight:600;padding:5px 9px;border-radius:999px}
-.mynote{background:#1d2a3a;border-left:3px solid var(--blue);border-radius:6px;padding:6px 8px;font-size:13px;margin:4px 0 6px;white-space:pre-wrap}
-.sheet-bg{position:fixed;inset:0;background:#0009;z-index:60;display:none;align-items:flex-end;justify-content:center}
-.sheet-bg.show{display:flex}
-.sheet{background:var(--card);width:100%;max-width:560px;max-height:80vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
-.plates{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;margin:12px 0}
-.plate{border-radius:6px;color:#111;font-weight:800;display:flex;align-items:center;justify-content:center;width:34px}
-.feel{display:flex;gap:6px}
-.feel button{flex:1;background:var(--card2);border-radius:10px;padding:10px 0;font-weight:700}
-.feel button.on{background:var(--blue);color:#fff}
-.timer .t{font-size:34px}
-.timer{padding:14px 16px}
-.nextbar{position:fixed;left:0;right:0;z-index:70;display:none;justify-content:flex-end;gap:8px;padding:6px 10px;background:#2b3039;border-top:1px solid var(--line)}
-.nextbar.show{display:flex}
-</style>
-<style id="cyber">
-/* ===== CYBERPUNK THEME ===== */
-:root{
-  --bg:#0a0506; --card:#140809; --card2:#1f0e10; --line:#4a1c1e; --text:#f3e9e6; --muted:#a3807d;
-  --blue:#5ef2f2; --green:#5ef2f2; --red:#ff5a4f; --gold:#f5d33a; --mag:#ff5a4f;
-  --bench:#f5d33a; --hinge:#5ef2f2; --squat:#ff8a5c; --ohp:#ff5a4f;
-  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  --head:"Avenir Next Condensed","Arial Narrow","Roboto Condensed",-apple-system,sans-serif;
-}
-html,body{background:var(--bg)}
-body{background:
-  radial-gradient(1000px 600px at 50% -10%,rgba(255,90,79,.20),transparent 65%),
-  radial-gradient(700px 400px at 110% 100%,rgba(94,242,242,.07),transparent 60%),
-  linear-gradient(rgba(255,90,79,.045) 1px,transparent 1px) 0 0/100% 32px,
-  linear-gradient(90deg,rgba(255,90,79,.045) 1px,transparent 1px) 0 0/32px 100%,
-  var(--bg);background-attachment:fixed}
-body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;
-  background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)}
-h1{font-family:var(--head);font-weight:800;font-size:30px;letter-spacing:1.5px;color:#fff;
-  color:var(--red);text-shadow:1.5px 0 rgba(94,242,242,.55),0 0 18px rgba(255,90,79,.45)}
-h2{font-family:var(--head);text-transform:uppercase;letter-spacing:2px;color:var(--red);text-shadow:0 0 10px rgba(255,90,79,.5);border-bottom:1px solid rgba(255,90,79,.5);padding-bottom:4px}
-.muted{color:var(--muted)}
-.card{background:linear-gradient(160deg,#1a0a0c 0%,#0d0607 100%);border:1px solid var(--line);border-left:2px solid var(--red);
-  border-radius:0;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));
-  box-shadow:inset 0 0 24px rgba(94,242,242,.05)}
-.card.warm{border:1px dashed #5a2426;border-left:2px dashed var(--blue);color:var(--muted);font-family:var(--mono);font-size:13px}
-.ex-title{color:var(--red);font-family:var(--head);text-transform:uppercase;letter-spacing:1px;font-size:18px;text-shadow:0 0 10px rgba(255,90,79,.55)}
-.ex-title .dot{border-radius:0;transform:rotate(45deg);box-shadow:0 0 8px currentColor}
-.ex-target{color:var(--gold);font-family:var(--mono);font-size:12.5px;letter-spacing:.3px;text-shadow:0 0 8px rgba(245,211,58,.35)}
-.ex-note{color:#c4a3a0}
-th{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--blue)}
-.setno{background:#0c0506;border:1px solid var(--line);border-radius:0;font-family:var(--mono);color:#f3e9e6}
-.setno.w{color:#ff9f1c;background:#1d1208;border-color:#5a3a12}
-.setno.prset{background:var(--gold);color:#140f00;border-color:var(--gold);box-shadow:0 0 12px rgba(245,211,58,.7)}
-.prev{font-family:var(--mono);font-size:12px}
-.cell{background:#070304;border:1px solid var(--line);border-radius:0;font-family:var(--mono);color:#fff}
-.cell:focus{outline:none;border-color:var(--mag);box-shadow:0 0 0 1px var(--mag),0 0 14px rgba(255,90,79,.45)}
-.cell::placeholder{color:#6e4a47}
-.chk{background:#0c0506;border:1px solid #5a2426;border-radius:0}
-.chk svg{stroke:#8a5a57}
-tr.done .chk{background:var(--blue);border-color:var(--blue);box-shadow:0 0 14px rgba(94,242,242,.6)}
-tr.done .chk svg{stroke:#021617}
-tr.done .cell,tr.done .setno{background:#061a1b;border-color:#1d5d5f;color:#c9fbfb}
-tr.done .setno.prset,.setno.prset{background:var(--gold);color:#140f00;border-color:var(--gold);box-shadow:0 0 12px rgba(245,211,58,.7)}
-.addset{background:transparent;border:1px dashed #5a2426;border-radius:0;color:var(--blue);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;font-size:12px}
-.btn{border-radius:0;font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;font-size:13px;background:var(--card2);border:1px solid var(--line);
-  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
-.btn.primary{background:var(--mag);color:#1a0302;border-color:var(--mag);font-weight:800;box-shadow:0 0 18px rgba(255,90,79,.6)}
-.btn.blue{background:var(--blue);color:#001518;border-color:var(--blue);font-weight:800}
-.btn.danger{background:#2a0614;color:var(--red);border-color:#5c1430}
-.chip,.mini{border-radius:0;background:transparent;border:1px solid var(--line);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;font-size:11px;color:var(--muted)}
-.mini:active,.chip:active{border-color:var(--blue);color:var(--blue)}
-.mynote{background:rgba(255,90,79,.07);border-left:2px solid var(--mag);border-radius:0;font-family:var(--mono);font-size:12.5px}
-.prb{background:var(--gold);color:#140f00;border-radius:0;box-shadow:0 0 8px rgba(245,211,58,.7)}
-.tabbar{background:rgba(10,5,6,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(255,90,79,.45);box-shadow:0 -6px 24px rgba(255,90,79,.12)}
-.tab{font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;font-size:9.5px}
-.tab.on{color:var(--blue);text-shadow:0 0 8px rgba(94,242,242,.8)}
-.tab.on svg{filter:drop-shadow(0 0 6px rgba(94,242,242,.9))}
-.timer{background:rgba(10,5,6,.95);border:1px solid var(--red);color:var(--red);border-radius:0;
-  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));box-shadow:0 0 24px rgba(255,90,79,.35)}
-.timer .t{font-family:var(--mono);text-shadow:0 0 14px rgba(255,90,79,.9)}
-.timer .small{font-family:var(--mono);text-transform:uppercase;letter-spacing:2px}
-.timer .btn{background:transparent!important;border:1px solid rgba(255,90,79,.5);color:var(--red)}
-.timer.over{background:rgba(6,22,23,.96);border-color:var(--green);color:var(--green)}
-.timer.over .t{text-shadow:0 0 14px rgba(94,242,242,.9)}
-.timer.over .btn{border-color:rgba(94,242,242,.5);color:var(--green)}
-.banner{background:rgba(245,211,58,.06);border:1px solid rgba(245,211,58,.55);color:var(--gold);border-radius:0;font-family:var(--mono);font-size:12.5px}
-.sess{border-radius:0;background:rgba(20,8,9,.9);border:1px solid var(--line)}
-.sess .st{border-radius:0;transform:rotate(45deg)} .sess .st>*{transform:rotate(-45deg)}
-.sess.done .st{background:var(--green);border-color:var(--green);color:#03140a;box-shadow:0 0 10px rgba(94,242,242,.6)}
-.sess.prog .st{border-color:var(--gold);color:var(--gold)}
-.sess.next{outline:1px solid var(--blue);box-shadow:0 0 16px rgba(94,242,242,.35)}
-.field input,select,textarea{border-radius:0!important;background:#070304!important;border:1px solid var(--line)!important;font-family:var(--mono)!important;color:#fff}
-.stat{border-radius:0;background:#0c0506;border:1px solid var(--line)}
-.stat .v{font-family:var(--mono);color:var(--blue);text-shadow:0 0 10px rgba(94,242,242,.5)}
-.stat .l{font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;font-size:10px}
-.toast{background:rgba(10,5,6,.95);border:1px solid var(--mag);color:#fff;border-radius:0;font-family:var(--mono);box-shadow:0 0 18px rgba(255,90,79,.5)}
-.sheet{background:#0d0607;border-top:1px solid var(--blue);border-radius:0;box-shadow:0 -10px 40px rgba(94,242,242,.2)}
-.feel button{border-radius:0;background:#0c0506;border:1px solid var(--line);font-family:var(--mono)}
-.feel button.on{background:var(--mag);border-color:var(--mag);color:#1a0302;box-shadow:0 0 12px rgba(255,90,79,.6)}
-.plate{border-radius:0;box-shadow:0 0 10px currentColor}
-.nextbar{background:#0d0607;border-top:1px solid var(--mag)}
-svg.chart text{font-family:var(--mono)}
-svg.chart line{stroke:#2a1213}
+.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
-.ex-title .dot{background:var(--blue)!important}
-.stat .v{color:var(--gold);text-shadow:0 0 10px rgba(245,211,58,.4)}
-.addset{color:var(--red)}
-.sess.done .st{color:#021617}
-</style>
-<style id="precision">
-/* ===== PRECISION / GRAND-TOURING LAYER (on top of cyberpunk) ===== */
-body::before{content:"";position:fixed;left:0;right:0;top:env(safe-area-inset-top);height:2px;z-index:90;pointer-events:none;
-  background:linear-gradient(90deg,transparent 0%,rgba(255,90,79,.25) 8%,#ff5a4f 20%,#ff6a5f 50%,#ff5a4f 80%,rgba(255,90,79,.25) 92%,transparent 100%);
-  box-shadow:0 0 10px rgba(255,90,79,.9),0 0 24px rgba(255,90,79,.5)}
-.tabbar::before{content:"";position:absolute;left:6%;right:6%;top:-1px;height:2px;
-  background:linear-gradient(90deg,transparent,#ff5a4f 15%,#ff5a4f 85%,transparent);box-shadow:0 0 10px rgba(255,90,79,.8)}
-h1{font-weight:600;letter-spacing:4px;font-size:27px;text-shadow:0 0 16px rgba(255,90,79,.45)}
-.ex-title{font-weight:600;letter-spacing:2px;font-size:16px}
-.card{position:relative}
-.card::before,.card::after{content:"";position:absolute;left:0;right:0;height:1px;pointer-events:none;
-  background:linear-gradient(90deg,transparent 0%,rgba(243,233,230,.16) 18%,rgba(243,233,230,.05) 60%,transparent 100%)}
-.card::before{top:7px}
-.card::after{bottom:7px;background:linear-gradient(90deg,transparent 0%,rgba(94,242,242,.05) 40%,rgba(94,242,242,.18) 82%,transparent 100%)}
-.card.warm::before,.card.warm::after{display:none}
-.gauge{flex:none}
-.gauge .trk{fill:none;stroke:#2a1213;stroke-width:6}
-.gauge .arc{fill:none;stroke-width:6;stroke-linecap:butt;transition:stroke-dasharray .25s linear}
-.gauge .tk{stroke:#6e4a47;stroke-width:1.2}
-.gauge .tk.hot{stroke:#ff5a4f}
-.gauge text{font-family:var(--mono);text-anchor:middle;dominant-baseline:central}
-.timer{align-items:center;gap:8px}
-.timer,.timer.over{background:#0a0506!important}
-.timer.over{background:#061617!important}
-.timer .btn{padding:8px 9px;font-size:12px;letter-spacing:.5px}
-.timer .lbl{white-space:nowrap}
-.timer .lbl{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;opacity:.85}
+/* chrome */
+.corpbar{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 8px) 16px 6px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.corpbar .jagmini{width:28px;height:28px;flex:none;border-radius:7px;overflow:hidden}
+.corpbar .jagmini img{width:100%;height:100%;object-fit:cover;border:0!important}
+.corpbar .stack{display:flex;flex-direction:column;line-height:1.1}
+.corpbar .stack span:not(.wm){display:none}
+.corpbar .wm{color:var(--text);font-weight:700;font-size:13px;letter-spacing:2.5px}
+.corpbar .wm b{color:var(--red);font-weight:700}
+.corpbar .stack:last-child span:first-child{display:block;font-family:var(--mono);font-size:13px;color:var(--faint);letter-spacing:0}
+.bc,.serial,.fine{display:none!important}
 .hdrrow{display:flex;align-items:center;gap:12px}
-.jag svg{width:100%;height:100%;display:block}
-.jag img,.jagmini img{image-rendering:auto;-webkit-user-drag:none}
-</style>
-<style id="corpo">
-/* ===== MEGA-CORP LAYER: cold steel, stark white, red accent ===== */
-:root{--bg:#05070b;--card:#0b1016;--card2:#121a23;--line:#24303c;--text:#eef3f8;--muted:#7d8a99;
-  --blue:#8fd3ff;--green:#8fd3ff;--red:#ff3b3b;--mag:#ff3b3b;--gold:#f5d33a;--hinge:#8fd3ff;--squat:#c9d4df;--ohp:#ff3b3b;--bench:#f5d33a}
-body{background:
-  radial-gradient(900px 260px at 50% 104%,rgba(255,59,59,.30),transparent 70%),
-  repeating-linear-gradient(90deg,rgba(143,211,255,.035) 0 1px,transparent 1px 46px),
-  linear-gradient(180deg,#132131 0%,#0a111a 30%,#05070b 70%);background-attachment:fixed}
-body::before{background:linear-gradient(90deg,transparent,#ff3b3b 18%,#ff3b3b 82%,transparent);box-shadow:0 0 8px rgba(255,59,59,.7)}
-h1{color:#fff;text-shadow:none;letter-spacing:5px;font-weight:600}
-h1::after{content:"";display:block;width:56px;height:3px;background:var(--red);margin-top:6px}
-h2{color:#fff;text-shadow:none;border-bottom:1px solid var(--line);letter-spacing:4px;font-size:15px}
-h2::before{content:"// ";color:var(--red)}
-.card{background:linear-gradient(180deg,#0e151d 0%,#090d12 100%);border-left:2px solid var(--red);box-shadow:none}
-.card.warm{border-left:2px dashed #8fd3ff}
-.ex-title{color:#fff;text-shadow:none}
-.ex-title .dot{background:var(--red)!important;box-shadow:none}
-.ex-target{color:#8fd3ff;text-shadow:none}
-th{color:#7d8a99}
-.cell:focus{border-color:#8fd3ff;box-shadow:0 0 0 1px #8fd3ff}
-tr.done .chk{background:#eef3f8;border-color:#eef3f8;box-shadow:none} tr.done .chk svg{stroke:#05070b}
-tr.done .cell,tr.done .setno{background:#0f1a24;border-color:#2f4a60;color:#fff}
-.btn.primary{background:var(--red);color:#fff;border-color:var(--red);box-shadow:none}
-.btn.blue{background:#eef3f8;color:#05070b;border-color:#eef3f8}
-.tabbar{background:rgba(5,7,11,.96);border-top:1px solid var(--line);box-shadow:none}
-.tab.on{color:#fff;text-shadow:none} .tab.on svg{filter:none;stroke:var(--red)}
-.timer{border-color:#eef3f8;color:#eef3f8;box-shadow:none} .timer .btn{border-color:#3a4a5a!important;color:#eef3f8!important}
-.timer.over{border-color:#8fd3ff;color:#8fd3ff}
-.banner{background:repeating-linear-gradient(-45deg,rgba(245,211,58,.10) 0 9px,transparent 9px 18px),#0b1016;border:1px solid rgba(245,211,58,.5);border-left:5px solid var(--gold);color:#f5e7a1}
-.toast{border-color:var(--red);box-shadow:none;text-transform:uppercase;font-size:12px;letter-spacing:1px}
-.stat .v{color:#fff;text-shadow:none}
-.sess.next{outline:1px solid #fff;box-shadow:none}
-.sess.done .st{background:#eef3f8;border-color:#eef3f8;box-shadow:none;color:#05070b}
-.sheet{border-top:2px solid var(--red);box-shadow:none}
-.mynote{background:rgba(143,211,255,.06);border-left-color:#8fd3ff}
-.feel button.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:none}
-.addset{color:#8fd3ff}
-.corpbar{position:relative;z-index:5;margin:calc(env(safe-area-inset-top) + 4px) auto 0;max-width:560px;padding:8px 14px 0;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:#7d8a99}
-.corpbar .wm{color:#fff;font-weight:800;font-size:12px;letter-spacing:3px}
-.corpbar .wm b{color:var(--red)}
-.corpbar .jagmini{width:22px;height:22px}
-.corpbar .jagmini svg{width:100%;height:100%}
-.bc{display:inline-block;height:12px;width:54px;vertical-align:middle;background:repeating-linear-gradient(90deg,#c9d4df 0 1px,transparent 1px 3px,#c9d4df 3px 5px,transparent 5px 6px,#c9d4df 6px 7px,transparent 7px 10px);opacity:.55}
-.serial{position:absolute;top:10px;right:16px;font-family:var(--mono);font-size:9px;letter-spacing:1px;color:#5d6a78;display:flex;gap:6px;align-items:center}
+.hdrrow .jag{display:none}
+.jag img{width:100%;height:100%;object-fit:contain}
 
-.cell{background:#04070b;border-color:#24303c}
-.cell::placeholder{color:#4f5d6b}
-.chk{background:#0a1017;border-color:#2f3b48} .chk svg{stroke:#5d6a78}
-.setno{background:#0a1017;border-color:#24303c;color:#dfe7ef}
-.ex-note{color:#9aa7b5}
-.prev{color:#7d8a99}
-.mini,.chip{border-color:#2a3644;color:#9aa7b5}
-.sheet{background:#0b1016}
-.gauge .trk{stroke:#1a2430} .gauge .tk{stroke:#4c5866} .gauge .tk.hot{stroke:#ff3b3b}
-.sess{background:rgba(11,16,22,.92);border-color:#24303c}
-.sess .st{border-color:#3a4a5a}
-.field input,select,textarea{background:#04070b!important;border-color:#24303c!important}
-.stat{background:#090e14;border-color:#24303c}
-.card.warm{border-color:#2a3644;color:#9aa7b5}
-.corpbar{flex-wrap:nowrap}
-.corpbar .jagmini{width:34px;height:34px;flex:none}
-.corpbar .jagmini{border:0!important}
-.corpbar .jagmini img{border:0!important}
-.corpbar .stack{display:flex;flex-direction:column;gap:2px;line-height:1.1}
-.fine{max-width:560px;margin:0 auto;padding:6px 16px 20px;font-family:var(--mono);font-size:9px;line-height:1.5;letter-spacing:1px;text-transform:uppercase;color:#4c5866}
-html,body{overflow-x:hidden}
-#view,#sheet,.toast{overflow-wrap:anywhere;word-break:break-word}
-#view *,#sheet *{min-width:0}
-#view h1,#view h2,.ex-title,.mtstep b,.card>div[style*="font-weight:700"]{min-width:fit-content}
-table{table-layout:fixed}
-th:nth-child(5),td:nth-child(5){width:48px}
-.prev{white-space:normal;overflow:hidden}
-.ex-tools{flex-wrap:wrap}
-.hdrrow h1{overflow-wrap:anywhere}
+/* tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:rgba(14,15,17,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:20}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--faint);min-height:48px;justify-content:center}
+.tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tab.on{color:var(--text)} .tab.on svg{stroke:var(--red)}
+
+/* surfaces */
+.card{background:var(--card);border-radius:var(--r);padding:16px;margin:12px 0;border:1px solid transparent}
+.stat{background:var(--card2);border-radius:12px;padding:12px}
+.stat .v{font-size:20px;font-weight:600;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.stat .l{font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.banner{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:12px;padding:12px 14px;font-size:13px;margin:12px 0;color:var(--text);line-height:1.45}
+.banner .btn{margin-top:8px}
 .behind{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.seg{display:flex;border:1px solid var(--line);margin:6px 0 4px;background:#05080c}
-.seg button{flex:1;padding:9px 0;font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--muted)}
-.seg button.on{background:var(--red,#ff3b3b);color:#fff;font-weight:800;box-shadow:0 0 12px rgba(255,59,59,.35)}
-.seg2 button{font-size:10px;letter-spacing:1px;padding:8px 0}.seg2 button.on{background:#14202c;color:var(--blue);box-shadow:inset 0 -2px 0 var(--blue)}
-.callout{font-family:var(--mono);font-size:22px;font-weight:800;color:#fff;letter-spacing:1px;margin-top:4px;text-shadow:0 0 10px rgba(255,59,59,.6)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.mini.on{background:var(--red,#ff3b3b);color:#fff;border-color:var(--red,#ff3b3b)}
-.rate{display:flex;gap:4px}.rate button{width:34px;height:30px;border:1px solid var(--line);font-family:var(--mono);color:var(--muted);background:#05080c}.rate button.on{background:var(--gold);color:#000;font-weight:800}
-.combos{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:8px;font-size:14px}.combos b{font-family:var(--mono);color:var(--red,#ff3b3b);margin-right:4px}
-.ttab{table-layout:auto;font-size:12px}.ttab td,.ttab th{padding:4px 2px;text-align:center;font-family:var(--mono);overflow-wrap:normal;word-break:normal}.ttab td:first-child,.ttab th:first-child{width:auto;min-width:96px;text-align:left;font-family:inherit}
-ul.book{margin:6px 0;padding-left:18px;line-height:1.45}ul.book li{margin:3px 0}
-.filmnote{margin-top:6px;width:100%;font-size:13px;padding:6px;background:#05080c;border:1px solid var(--line);color:var(--text)}.film.seen{opacity:.7}
-.mtstep{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
-.mtstep .chk{margin:0;flex:none}.mtstep.done .chk{background:var(--green)}.mtstep.done .chk svg{stroke:#06210f}.mtstep.done>div{opacity:.6}
+
+/* buttons: primary (red fill) · secondary (gray) · quiet (text) */
+.btn{background:var(--card2);min-height:44px;min-width:44px;padding:10px 16px;border-radius:12px;font-weight:600;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary,.btn.blue{background:var(--red);color:#fff}
+.btn.danger{background:transparent;color:var(--red);border:1px solid var(--line)}
+.btn.sm{min-height:44px;padding:8px 14px;font-size:15px}
+.btn:active,.mini:active,.sess:active{opacity:.7}
+.chip{background:var(--card2);min-height:36px;padding:8px 12px;border-radius:999px;font-size:13px;color:var(--muted);display:inline-flex;align-items:center}
+.mini{background:var(--card2);color:var(--text);font-size:13px;font-weight:500;min-height:40px;min-width:44px;padding:8px 14px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:4px;border:1px solid transparent}
+.mini.on{background:var(--text);color:#000}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.quiet{color:var(--muted);font-size:13px;min-height:44px;padding:0 4px;display:inline-flex;align-items:center}
+
+/* segmented control (iOS style) */
+.seg{display:flex;background:var(--card2);border-radius:10px;padding:2px;margin:8px 0 4px}
+.seg button{flex:1;min-height:40px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button.on{background:#3a3d43;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+
+/* forms */
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input,select{width:100%;height:44px;border-radius:10px;border:0;background:var(--card2);padding:0 12px;font-size:16px}
+.field input{font-family:var(--mono);font-variant-numeric:tabular-nums}
+textarea{width:100%;height:120px;background:var(--card2);color:var(--text);border:0;border-radius:10px;padding:12px;font:16px var(--sans)}
+input[type=checkbox]{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--faint);background:transparent;flex:none;display:inline-grid;place-content:center;margin:0}
+input[type=checkbox]:checked{background:var(--green);border-color:var(--green)}
+input[type=checkbox]:checked::after{content:"";width:10px;height:6px;border:2px solid #000;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.filmrow input[type=checkbox]{width:36px;height:36px;padding:0;box-shadow:0 0 0 6px transparent}
+label.btn{position:relative;cursor:pointer}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+
+/* workout */
+.ex-title{font-weight:600;font-size:20px;letter-spacing:-.2px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text)}
+.ex-title .dot{display:none}
+.ex-target{font-size:13px;color:var(--text);font-family:var(--mono);margin:4px 0 2px}
+.ex-note{font-size:13px;color:var(--muted);margin:2px 0 8px;line-height:1.4}
+.ex-tools{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 8px}
+.mynote{background:var(--card2);border-radius:10px;padding:8px 12px;font-size:13px;margin:4px 0 8px;white-space:pre-wrap;color:var(--text)}
+table{width:100%;border-collapse:separate;border-spacing:0 6px;table-layout:fixed}
+th{font-size:13px;color:var(--muted);font-weight:500;text-align:center;padding:0 2px}
+th:first-child,td:first-child{width:44px} th:nth-child(5),td:nth-child(5){width:52px}
+td{text-align:center;padding:0 3px}
+.setno{background:var(--card2);border-radius:10px;height:44px;line-height:44px;font-weight:600;font-family:var(--mono);width:100%}
+.setno.w{color:var(--muted);background:transparent;border:1px dashed var(--line)}
+.setno.prset{background:var(--gold);color:#000;font-size:13px}
+.prev{color:var(--muted);font-size:13px;white-space:normal;font-family:var(--mono)}
+.cell{width:100%;height:44px;border-radius:10px;border:0;background:var(--card2);text-align:center;font-weight:600;font-size:17px;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--text)}
+.cell::placeholder{color:var(--faint);font-weight:500}
+.chk{width:44px;height:44px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;margin:0 auto;flex:none}
+.chk svg{width:20px;height:20px;stroke:var(--faint)}
+tr.done .chk,.mtstep.done .chk{background:var(--green)} tr.done .chk svg,.mtstep.done .chk svg{stroke:#000}
+tr.done .cell,tr.done .setno{color:var(--muted)}
+tr.wu .cell{font-size:15px;color:var(--muted);background:transparent;border:1px dashed var(--line)}
+.addset{width:100%;min-height:44px;background:transparent;border:1px dashed var(--line);border-radius:10px;font-weight:500;font-size:15px;color:var(--muted);margin-top:4px}
+.warm{background:transparent;border:1px dashed var(--line);color:var(--muted);font-size:13px}
+.prb{display:inline-block;background:var(--gold);color:#000;font-size:11px;font-weight:700;border-radius:5px;padding:1px 5px;margin-left:4px;vertical-align:middle;font-family:var(--mono)}
+.feel{display:flex;gap:8px}
+.feel button{flex:1;background:var(--card2);border-radius:10px;min-height:44px;font-weight:600;font-family:var(--mono)}
+.feel button.on{background:var(--text);color:#000}
+
+/* plan / session rows */
+.sess{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--card);margin:6px 0;min-height:56px;width:100%;text-align:left}
+.sess .st{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--faint);display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;color:#000}
+.sess.done .st{background:var(--green);border-color:var(--green)}
+.sess.prog .st{border-color:var(--gold)}
+.sess.next{box-shadow:inset 0 0 0 1.5px var(--red)}
+.wkhead{display:flex;align-items:center;min-height:44px;margin-top:10px;font-size:16px;font-weight:600;width:100%}
+.wkhead .muted{font-weight:400;font-size:13px;margin-left:8px}
+
+/* gauges — the instrument cluster */
+.gauge{flex:none}
+.gauge .trk{fill:none;stroke:#24272c;stroke-width:6}
+.gauge .arc{fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dasharray .25s linear}
+.gauge .tk{stroke:#3a3d43;stroke-width:1.2}
+.gauge .tk.hot{stroke:var(--red)}
+.gauge text{font-family:var(--mono);text-anchor:middle;dominant-baseline:central}
+
+/* rest timer */
+.timer{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));max-width:536px;margin:0 auto;background:rgba(21,23,26,.97);border:1px solid var(--line);border-radius:16px;padding:10px 12px;display:none;align-items:center;gap:8px;z-index:30;box-shadow:0 12px 32px rgba(0,0,0,.5);color:var(--text)}
+.timer.show{display:flex}
+.timer.over{border-color:var(--green)}
+.timer .lbl{font-size:13px;color:var(--muted);white-space:nowrap}
+.timer .btn{background:var(--card2)!important;min-height:44px;padding:8px 10px;font-size:13px;color:var(--text)!important}
+
+/* sheet, toast, next bar */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;display:none;align-items:flex-end;justify-content:center}
+.sheet-bg.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:85vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+.sheet h2{margin-top:0}
+.toast{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:rgba(40,42,46,.96);color:#fff;padding:12px 18px;border-radius:14px;font-size:15px;z-index:80;display:none;max-width:90%;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.nextbar{position:fixed;left:0;right:0;z-index:70;display:none;justify-content:flex-end;gap:8px;padding:6px 10px;background:var(--card2);border-top:1px solid var(--line)}
+.nextbar.show{display:flex}
+
+/* plates */
+.plates{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.plate{border-radius:6px;color:#111;font-weight:700;display:flex;align-items:center;justify-content:center;width:34px;font-family:var(--mono);font-size:13px}
+
+/* charts */
+svg.chart text{fill:var(--muted);font-size:11px;font-family:var(--mono)}
+.legend{display:flex;gap:12px;font-size:13px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.bar{background:var(--card2);height:8px;border-radius:4px;overflow:hidden}.bar>div{height:8px;border-radius:4px}
+
+/* Today */
+.today-date{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:6px}
+.tcard{display:block;width:100%;text-align:left;background:var(--card);border-radius:var(--r);padding:16px;margin:12px 0}
+.tcard .kicker{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.tcard .kicker b{color:var(--red);font-weight:600}
+.tcard .ttl{font-size:20px;font-weight:600;letter-spacing:-.2px;margin:4px 0 2px}
+.tcard .go{color:var(--red);font-weight:600;font-size:15px}
+.pill{display:inline-block;font-size:13px;padding:2px 8px;border-radius:999px;background:var(--card2);color:var(--muted)}
+.pill.ok{background:rgba(48,209,88,.15);color:var(--green)}
+.checkrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.checkrow .cell{text-align:left;padding:0 12px}
+
+/* Muay Thai */
+.mtstep{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.mtstep:last-of-type{border-bottom:0}
+.mtstep.done>div{opacity:.55}
+.callout{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--text);margin-top:4px}
+.rate{display:flex;gap:6px}
+.rate button{width:40px;height:40px;border-radius:10px;background:var(--card2);font-family:var(--mono);color:var(--muted)}
+.rate button.on{background:var(--text);color:#000;font-weight:700}
+.combos{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:8px;font-size:15px}
+.combos b{font-family:var(--mono);color:var(--red);margin-right:6px}
+.ttab{table-layout:auto;font-size:13px}.ttab td,.ttab th{padding:6px 2px;text-align:center;font-family:var(--mono);overflow-wrap:normal;word-break:normal}
+.ttab td:first-child,.ttab th:first-child{width:auto;min-width:104px;text-align:left;font-family:var(--sans)}
+ul.book{margin:8px 0;padding-left:20px;line-height:1.5}ul.book li{margin:4px 0}
+.filmrow{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);min-height:56px}
+.filmrow:last-child{border-bottom:0}
+.filmnote{margin-top:8px;width:100%;font-size:15px;min-height:44px;padding:8px 12px;background:var(--card2);border:0;border-radius:10px;color:var(--text)}
+.film.seen .ttl{color:var(--muted)}
+.listrow{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:8px 0;border-bottom:1px solid var(--line);text-align:left;font-size:16px}
+.listrow:last-child{border-bottom:0}
+.listrow .chev{color:var(--faint);font-size:20px}
+.sk-bar{height:4px;background:var(--card2);border-radius:2px;margin-top:8px}.sk-bar>div{height:4px;border-radius:2px;background:var(--text)}
+.hint{font-size:13px;color:var(--muted);margin:6px 0}
+
 </style>
 </head>
 <body>
-<div class="corpbar"><span class="jagmini" id="jagMini"></span><span class="stack"><span class="wm">OCELOTL<b>//</b>CORP</span><span>Biometric Conditioning Div.</span></span><span class="spacer"></span><span class="stack" style="text-align:right"><span>Build v31</span><span class="bc"></span></span></div>
+<div class="corpbar"><span class="jagmini" id="jagMini"></span><span class="stack"><span class="wm">OCELOTL<b>//</b>CORP</span><span>Biometric Conditioning Div.</span></span><span class="spacer"></span><span class="stack" style="text-align:right"><span>v32</span><span class="bc"></span></span></div>
 <div class="wrap" id="view"></div>
 <div class="fine">Ocelotl Corp. // Recomp Protocol v1.0 // Training data remains on this device. No cloud uplink. Missed sessions are logged. Leg day is mandatory.</div>
 <div class="timer" id="timer">
   <svg class="gauge" id="tGauge" width="82" height="82" viewBox="0 0 100 100"></svg>
-  <div><div class="lbl">Recovery</div><div class="lbl" id="timerSub" style="margin-top:4px;letter-spacing:1px">mandatory</div></div>
+  <div><div class="lbl">Rest</div><div class="lbl" id="timerSub" style="margin-top:2px"></div></div>
   <span id="timerT" style="display:none">0:00</span>
   <div class="spacer"></div>
   <button class="btn sm" style="background:#ffffff33" onclick="Timer.add(-30)">−30</button>
@@ -477,7 +374,7 @@ const MAIN_LIFTS=[{id:'pbench',name:'Paused Bench',c:'var(--bench)'},{id:'incl_t
 /* =========================================================
    STATE
    ========================================================= */
-const BUILD='v31';
+const BUILD='v32';
 const KEY='recomp_tracker_v1',BAK=KEY+'_bak';
 const BASE_T={rest:{kcal:2000,p:160,c:85,f:100},train:{kcal:2150,p:160,c:110,f:100}};
 const DEFAULT={version:1,created:new Date().toISOString(),
@@ -508,7 +405,7 @@ function repair(raw){
   for(const k of ['rest','train']){const x=isObj(t[k])?t[k]:{},b=BASE_T[k];o.targets[k]={kcal:num(x.kcal,b.kcal,1200,5000),p:num(x.p,b.p,0,500),c:num(x.c,b.c,0,800),f:num(x.f,b.f,0,400)}}
   o.checkins=(Array.isArray(s.checkins)?s.checkins:[]).filter(isObj);
   o.bar=num(s.bar,45,5,100);
-  o.tab=['workout','fuel','plan','progress','maxes','more'].includes(s.tab)?s.tab:'workout';
+  o.tab=['today','train','fuel','progress','more','maxes','book','film'].includes(s.tab)?s.tab:'today';o.trainView=s.trainView==='program'?'program':'session';o.progView=['lift','mt','body'].includes(s.progView)?s.progView:'lift';
   o.cur=typeof s.cur==='string'?s.cur:null;
   o.lastExport=num(s.lastExport,null,0);o.rev=num(s.rev,0,0);
   o.block=Math.round(num(s.block,1,1,99));o.blockStart=isDate(s.blockStart)?s.blockStart:null;if(o.block>1&&!o.blockStart)o.block=1;
@@ -528,7 +425,7 @@ function repair(raw){
   o.mtSkills={};if(isObj(s.mtSkills))for(const k in s.mtSkills){if(!Array.isArray(s.mtSkills[k]))continue;const h=s.mtSkills[k].filter(x=>isObj(x)&&isDate(x.d)&&[0,1,2,3].includes(x.v)).map(x=>({d:x.d,v:x.v}));if(h.length)o.mtSkills[String(k).slice(0,80)]=h.slice(-60)}
   const tst=(src,lims)=>{const out={};if(isObj(src))for(const w of ['1','4','8','12']){const T=src[w];if(!isObj(T))continue;const r={d:isDate(T.d)?T.d:null};for(const k in lims)r[k]=num(T[k],null,lims[k][0],lims[k][1]);out[w]=r}return out};
   o.mtTests=tst(s.mtTests,{peak:[60,230],hr1:[40,230],skips:[0,400],sim:[0,10]});
-  o.mtScore=tst(s.mtScore,{guard:[1,5],stance:[1,5],kick:[1,5],intent:[1,5],balance:[1,5],clinch:[1,5]});
+  o.mtScore=tst(s.mtScore,{exit:[1,5],guard:[1,5],stance:[1,5],kick:[1,5],intent:[1,5],balance:[1,5],clinch:[1,5]});
   delete o.fuelDate;
   return o;
 }
@@ -581,7 +478,7 @@ function keepGoodCopy(){try{localStorage.setItem(BAK,JSON.stringify(S))}catch(e)
 function restoreGoodCopy(){const b=readKey(BAK);if(!isObj(b)){toast('No good copy saved yet');return}
   if(!confirm('Go back to the last good copy (from the last time the app opened cleanly)?'))return;S=repair(b);S.rev=lastRev;buildSessions();save();renderTabs();go('workout')}
 buildSessions();
-if(S.cur&&!SESSIONS.some(s=>s.id===S.cur))S.cur=null;
+if(!S.cur||!SESSIONS.some(s=>s.id===S.cur))S.cur=nextSession();
 if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(()=>{})}
 
 const r5=x=>Math.round(x/5)*5;
@@ -671,16 +568,16 @@ function gaugeSVG(frac,center,sub,color,hotFrom){
   for(let k=0;k<=24;k++){const ang=(135+270*k/24)*Math.PI/180,r1=k%4===0?30:33,r2=36;
     ticks+=`<line class="tk${hotFrom!=null&&k/24>=hotFrom?' hot':''}" x1="${50+r1*Math.cos(ang)}" y1="${50+r1*Math.sin(ang)}" x2="${50+r2*Math.cos(ang)}" y2="${50+r2*Math.sin(ang)}"/>`}
   return `<circle class="trk" cx="50" cy="50" r="${R}" stroke-dasharray="${A} ${C}" transform="rotate(135 50 50)"/>
-    <circle class="arc" cx="50" cy="50" r="${R}" stroke="${color}" stroke-dasharray="${A*f} ${C}" transform="rotate(135 50 50)" style="filter:drop-shadow(0 0 4px ${color})"/>
+    <circle class="arc" cx="50" cy="50" r="${R}" stroke="${color}" stroke-dasharray="${A*f} ${C}" transform="rotate(135 50 50)"/>
     ${ticks}<text x="50" y="${sub?47:51}" fill="#fff" font-size="${center.length>4?17:20}" font-weight="700">${center}</text>${sub?`<text x="50" y="66" fill="${color}" font-size="8" letter-spacing="1">${sub}</text>`:''}`}
 const Timer={end:0,iv:null,rang:false,total:180,
   start(sec){this.end=Date.now()+sec*1000;this.total=sec;this.rang=false;$('timer').classList.add('show');$('timer').classList.remove('over');this.tick();clearInterval(this.iv);this.iv=setInterval(()=>this.tick(),250)},
   add(s){if(!this.end)return;this.end+=s*1000;if(this.end>Date.now()){this.rang=false;$('timer').classList.remove('over')}this.tick()},
   stop(){clearInterval(this.iv);this.end=0;$('timer').classList.remove('show')},
   tick(){if(!this.end)return;const left=Math.round((this.end-Date.now())/1000);const a=Math.abs(left);const txt=(left<0?'+':'')+Math.floor(a/60)+':'+String(a%60).padStart(2,'0');$('timerT').textContent=txt;
-    const over=left<=0;$('tGauge').innerHTML=gaugeSVG(over?1:left/this.total,txt,over?'GO':'SEC',over?'#8fd3ff':'#ff3b3b',over?null:0.0);
+    const over=left<=0;$('tGauge').innerHTML=gaugeSVG(over?1:left/this.total,txt,over?'GO':'REST',over?'#30d158':'#e2142d',null);
     $('tGauge').querySelectorAll('.tk').forEach((t,k)=>{if(!over&&k/24<=Math.max(0,left/this.total)&&k/24<0.2)t.classList.add('hot');else t.classList.remove('hot')});
-    $('timerSub').textContent=over?'resume work':'mandatory';
+    $('timerSub').textContent=over?'Go':'';
     if(left<=0){$('timer').classList.add('over');if(!this.rang&&document.visibilityState==='visible'){this.rang=true;beep()}} if(left<-120)this.stop()}};
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Timer.end){if(Date.now()>=Timer.end&&!Timer.rang){Timer.rang=true;beep();toast('Rest is over — next set!')}Timer.tick()}});
 
@@ -744,16 +641,6 @@ function needsBackup(){const f=firstActivity();if(!f)return false;return Date.no
 /* =========================================================
    VIEWS
    ========================================================= */
-const TABS=[['workout','Workout','<path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/>'],['fuel','Fuel','<path d="M12 3c1 4 5 6 5 11a5 5 0 0 1-10 0c0-3 2-4 2-7 1 1 2 2 2 4 1-2 1-5 1-8z"/>'],['plan','Plan','<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/>'],
-  ['progress','Progress','<path d="M4 19l5-6 4 3 7-9"/><path d="M4 4v15h16"/>'],['maxes','Maxes','<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'],['more','Export','<path d="M12 4v11M7 9l5-5 5 5"/><path d="M5 15v4h14v-4"/>']];
-function renderTabs(){$('tabbar').innerHTML=TABS.map(([k,l,ic])=>`<button class="tab ${S.tab===k?'on':''}" onclick="go('${k}')"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ic}</svg>${l}</button>`).join('')}
-function go(tab,keepScroll){if(tab==='fuel'&&S.tab!=='fuel')FD=null;S.tab=tab;save();renderTabs();render();if(!keepScroll)window.scrollTo(0,0)}
-function render(){try{({workout:vWorkout,fuel:vFuel,plan:vPlan,progress:vProgress,maxes:vMaxes,more:vMore}[S.tab]||vWorkout)()}
-  catch(e){console.error(e);$('view').innerHTML=`<h1>Screen error</h1><div class="card">This screen hit a problem, but your data is still saved on this phone.<div class="muted small" style="margin-top:6px;font-family:var(--mono)">${esc(String(e&&e.message||e).slice(0,160))}</div></div>
-    <div class="card"><button class="btn blue" style="width:100%" onclick="downloadExport()">1. Download my data (safe copy)</button>
-    <button class="btn" style="width:100%;margin-top:8px" onclick="restoreGoodCopy()">2. Restore last good copy</button>
-    <button class="btn" style="width:100%;margin-top:8px" onclick="go('${S.tab==='workout'?'plan':'workout'}')">Go to another tab</button></div>`}}
-function renderKeep(){const y=window.scrollY;render();window.scrollTo(0,y)}
 
 let showLast=false;
 function allDone(){return SESSIONS.every(s=>sessionStatus(s.id)==='done')}
@@ -792,18 +679,17 @@ function vWorkout(){
   if(!S.cur||!sess(S.cur))S.cur=nextSession();
   const s=sess(S.cur), L=log(s.id), t=targets(s), st=sessionStatus(s.id);
   let elapsed='';if(L&&L.start){const mins=Math.round(((L.end||Date.now())-L.start)/60000);elapsed=Math.floor(mins/60)+':'+String(mins%60).padStart(2,'0')}
-  let h=modeSwitch()+`<div class="row" style="margin-top:4px"><button class="chip" onclick="go('plan')">‹ ${esc(s.wlabel)}</button><div class="spacer"></div>
-    ${st==='done'?'<span class="chip" style="color:var(--green)">Finished ✓</span>':`<button class="btn primary" onclick="finish()">Finish</button>`}</div>
+  let h=modeSwitch()+`<div class="row" style="margin-top:6px"><span class="muted small">${esc(s.wlabel)}</span><div class="spacer"></div><button class="quiet" onclick="setTrain('lift','program')">Program ›</button></div>
     <div class="hdrrow"><div style="flex:1"><h1>${esc(s.name)}</h1><div class="muted small">${fmtDate(s.date)}${L&&L.date&&L.date!==s.date?' · done '+fmtDate(L.date):''}${elapsed?' · ⏱ '+elapsed:''}</div></div>
     ${(()=>{let tot=0,dn=0;s.ex.forEach(e=>{if(e.warm)return;const a=(L&&L.ex[e.id])||[];tot+=Math.max(exSets(e),a.length);dn+=a.filter(x=>x.done).length});const f=tot?dn/tot:0;
-      return `<svg class="gauge" width="72" height="72" viewBox="0 0 100 100">${gaugeSVG(f,Math.round(f*100)+'%','SETS',f>=1?'#8fd3ff':'#eef3f8',0.85)}</svg>`})()}</div>`;
-  if(s.id==='w2d1'||s.id==='w2d2'||s.id==='w2d4')h+=`<div class="banner">EVALUATION DAY — log your heaviest set honestly. Results set your loads for the rest of the contract.</div>`;
+      return `<svg class="gauge" width="72" height="72" viewBox="0 0 100 100">${gaugeSVG(f,Math.round(f*100)+'%','SETS',f>=1?'#30d158':'#f5f5f7',null)}</svg>`})()}</div>
+    ${st==='done'?'<div class="pill ok" style="margin:6px 0">Finished ✓</div>':''}`;
+  if(s.id==='w2d1'||s.id==='w2d2'||s.id==='w2d4')h+=`<div class="banner">Test day — log your heaviest set honestly. It sets your weights for the rest of the block.</div>`;
   if(LOAD_NOTE)h+=`<div class="banner">${esc(LOAD_NOTE)}</div>`;
-  {const b=behindInfo();if(b&&S.cur===b.nx.id)h+=`<div class="banner">BEHIND SCHEDULE — ${b.n} session${b.n>1?'s':''} overdue. ${esc(b.nx.name)} was due ${fmtDate(b.nx.date)}.
+  {const b=behindInfo();if(b&&S.cur===b.nx.id)h+=`<div class="banner">Behind schedule — ${b.n} session${b.n>1?'s':''} overdue. ${esc(b.nx.name)} was due ${fmtDate(b.nx.date)}.
     <div class="behind"><button class="btn sm blue" onclick="shiftSchedule()">Do it today — shift my schedule</button><button class="btn sm" onclick="skipSess('${b.nx.id}')">Skip this day</button></div></div>`}
-  if(weighDue())h+=weighCard();
-  if(s.week===10)h+=`<div class="banner">CONTRACT TERM ENDING — after this week the app walks you through exporting and starting the next block.</div>`;
-  if(needsBackup())h+=`<div class="banner">DATA RETENTION WARNING — no backup in 14+ days. <button class="btn sm blue" style="margin-left:6px" onclick="go('more')">Back up now</button></div>`;
+  if(s.week===10)h+=`<div class="banner">Last week of the block — afterwards the app walks you through exporting and starting the next one.</div>`;
+  if(needsBackup())h+=`<div class="banner">Backup due — no backup in 14+ days.<div><button class="btn sm blue" onclick="go('more')">Back up now</button></div></div>`;
   const PRS=prMap().pr;
   s.ex.forEach((e,ix)=>{
     if(e.warm){h+=`<div class="card warm">${esc(e.name)}</div>`;return}
@@ -814,14 +700,11 @@ function vWorkout(){
     if(sw)tgt=`Swapped today — pick a weight for ${esc(e.reps)} reps`;
     let note=e.note; if(note.includes('{drop}'))note=note.replace('{drop}',tw!=null?r5(tw*0.95):'95% of back-off');
     const bar=BARBELL.has(e.id)&&!sw;
-    h+=`<div class="card"><div class="serial">PRT-${s.id.toUpperCase()}-${String(ix).padStart(2,'0')}<span class="bc" style="width:34px;height:9px"></span></div><div class="ex-title" style="padding-right:84px" onclick="showHistory('${e.id}')"><span class="dot" style="background:${catColor(e.cat)}"></span>${sw?esc(sw)+' <span class="muted small">(instead of '+esc(e.name)+')</span>':esc(e.name)} <span class="muted small">›</span></div>
+    h+=`<div class="card"><div class="row" style="align-items:flex-start"><div class="ex-title" style="flex:1" onclick="showHistory('${e.id}')"><span class="dot" style="background:${catColor(e.cat)}"></span>${sw?esc(sw)+' <span class="muted small">(instead of '+esc(e.name)+')</span>':esc(e.name)} <span class="muted small">›</span></div><button class="mini" aria-label="More" onclick="exMenu('${e.id}',${bar?(tw!=null?tw:(sets[0]&&sets[0].w)||(prev&&prev[0]&&prev[0].w)||0):'null'})">⋯</button></div>
       <div class="ex-target">${tgt}</div>${note&&!sw?`<div class="ex-note">${esc(note)}</div>`:''}
       ${S.notes[e.id]?`<div class="mynote" onclick="editNote('${e.id}')">${esc(S.notes[e.id])}</div>`:''}
-      <div class="ex-tools">${bar?`<button class="mini" onclick="showPlates(${tw!=null?tw:(sets[0]&&sets[0].w)||(prev&&prev[0]&&prev[0].w)||0})">Plates</button>`:''}
-        <button class="mini" onclick="editNote('${e.id}')">${S.notes[e.id]?'Edit note':'+ Note'}</button>
-        <button class="mini" onclick="swapEx('${e.id}')">${sw?'Undo swap':'Swap'}</button>
-        <button class="mini" onclick="showHistory('${e.id}')">History</button></div>
-      <table><tr><th>Set</th><th>Previous</th><th>lbs</th><th>Reps</th><th style="width:48px">✓</th></tr>`;
+      ${bar?`<div class="ex-tools"><button class="mini" onclick="showPlates(${tw!=null?tw:(sets[0]&&sets[0].w)||(prev&&prev[0]&&prev[0].w)||0})">Plates</button></div>`:''}
+      <table><tr><th>Set</th><th>Previous</th><th>lbs</th><th>Reps</th><th>✓</th></tr>`;
     // Warm-up sets for main barbell lifts: bar x8, 50% x5, 70% x3, 85% x1 of the first work set
     if(bar&&e.main){const work=tw!=null?tw:((sets[0]&&sets[0].w)||(prev&&prev[0]&&prev[0].w)||null);
       if(work&&work>S.bar){const wu=[[S.bar,8],[Math.max(S.bar,r5(work*.5)),5],[Math.max(S.bar,r5(work*.7)),3],[Math.max(S.bar,r5(work*.85)),1]].filter((x,k,a)=>k===0||x[0]>a[k-1][0]);
@@ -838,14 +721,15 @@ function vWorkout(){
         <td><input class="cell" enterkeyhint="next" inputmode="numeric" value="${x.r??''}" placeholder="${esc(phR)}" onchange="setVal('${e.id}',${i},'r',this.value)"></td>
         <td><button class="chk" onclick="toggle('${e.id}',${i})">${CHECK}</button></td></tr>`;
     }
-    h+=`</table><button class="addset" onclick="addSet('${e.id}')">+ Add Set</button><div class="muted small" style="text-align:center;margin-top:6px">Tap a set number to delete or clear it</div></div>`;
+    h+=`</table><button class="addset" onclick="addSet('${e.id}')">+ Add set</button></div>`;
   });
+  h+=`<div class="hint" style="text-align:center">Tap a set number to delete or clear it · ⋯ for plates, notes, swap, history</div>`;
   const fl=L&&L.feel;
-  h+=`<div class="card"><div style="font-weight:700;margin-bottom:8px">How did today feel?</div>
+  h+=`<div class="card"><div style="font-weight:600;margin-bottom:8px">How did today feel?</div>
     <div class="feel">${[1,2,3,4,5].map(n=>`<button class="${fl===n?'on':''}" onclick="setFeel(${n})">${n}</button>`).join('')}</div>
     <div class="muted small" style="margin:6px 0 10px">1 = drained · 3 = normal · 5 = great</div>
     <textarea style="height:70px;font:15px -apple-system,Arial" placeholder="Notes: sleep, energy, low back, anything off…" onchange="setSessNote(this.value)">${esc((L&&L.note)||'')}</textarea></div>`;
-  h+=`<div class="row" style="margin:16px 0"><button class="btn" onclick="moveSess(-1)">‹ Previous day</button><div class="spacer"></div><button class="btn" onclick="moveSess(1)">Next day ›</button></div>`;
+  h+=`${st==='done'?'':`<button class="btn primary" style="width:100%;margin-top:12px" onclick="finish()">Finish workout</button>`}<div class="row" style="margin:8px 0 16px"><button class="quiet" onclick="moveSess(-1)">‹ Previous day</button><div class="spacer"></div><button class="quiet" onclick="moveSess(1)">Next day ›</button></div>`;
   $('view').innerHTML=h;
 }
 function ensureLog(s){if(!S.logs[s.id])S.logs[s.id]={ex:{},start:null,end:null,date:null,finished:false};S.logs[s.id].t=Date.now();return S.logs[s.id]}
@@ -875,7 +759,7 @@ function toggle(exid,i){
     if(x.w<0||x.w>1000||x.r<1||x.r>50){toast('Check the weight (0–1000) and reps (1–50)');vWorkoutKeep();return}
     if(e.load&&e.load.t==='test'&&!(L.swap&&L.swap[exid])&&!testCheck(e,x)){vWorkoutKeep();return}
     x.done=true;x.t=Date.now(); if(!L.start)L.start=Date.now(); if(!L.date)L.date=today(); unlockAudio();
-    if(prMap().pr[s.id+'|'+exid+'|'+i])setTimeout(()=>toast('Performance record exceeded — est. 1RM '+Math.round(epley(x.w,x.r))+' lb'),50);
+    if(prMap().pr[s.id+'|'+exid+'|'+i])setTimeout(()=>toast('New PR — est. 1RM '+Math.round(epley(x.w,x.r))+' lb'),50);
     Timer.start(e.main?180:(e.id.startsWith('t_')?60:120));
   }else{x.done=false;x.t=Date.now()}
   applyTests(s);save();const y=window.scrollY;vWorkout();window.scrollTo(0,y);
@@ -900,27 +784,14 @@ function finish(){const s=sess(S.cur),L=ensureLog(s);
   const mins=Math.max(1,Math.round((L.end-L.start)/60000));let vol=0;Object.values(L.ex).forEach(a=>a.forEach(x=>{if(x.done&&x.w>0&&x.r>0)vol+=x.w*x.r}));
   S.cur=nx;save();go('workout');
   openSheet(`<div style="text-align:center"><div class="jag" style="width:min(320px,86vw);aspect-ratio:604/463;margin:0 auto;filter:drop-shadow(0 0 18px rgba(255,59,59,.35))">${JAG_EM}</div>
-    <h1 style="margin:8px 0 2px">Session logged</h1><div class="muted small">${esc(s.name)}</div></div>
+    <h1 style="margin:8px 0 2px">Workout logged</h1><div class="muted small">${esc(s.name)}</div></div>
     <div class="grid2" style="margin:14px 0"><div class="stat"><div class="v">${done}</div><div class="l">Sets done</div></div><div class="stat"><div class="v">${prs}</div><div class="l">New PRs</div></div>
     <div class="stat"><div class="v">${mins} min</div><div class="l">Time</div></div><div class="stat"><div class="v">${Math.round(vol).toLocaleString()} lb</div><div class="l">Volume</div></div></div>
-    <div class="muted small" style="text-align:center;margin-bottom:10px;font-family:var(--mono);letter-spacing:1px">Compliance ${Math.min(100,Math.round(done/Math.max(1,s.ex.filter(e=>!e.warm).reduce((n,e)=>n+exSets(e),0))*100))}% · Next assignment: ${esc(sess(nx).name)} · ${fmtDate(sess(nx).date)}</div>
-    <button class="btn primary" style="width:100%" onclick="closeSheet()">Acknowledge</button>`);}
+    <div class="muted small" style="text-align:center;margin-bottom:12px">${Math.min(100,Math.round(done/Math.max(1,s.ex.filter(e=>!e.warm).reduce((n,e)=>n+exSets(e),0))*100))}% of planned sets · Next: ${esc(sess(nx).name)} · ${fmtDate(sess(nx).date)}</div>
+    <button class="btn primary" style="width:100%" onclick="closeSheet()">Done</button>`);}
 function moveSess(d){const i=sidx(S.cur)+d;if(i<0||i>=SESSIONS.length)return;S.cur=SESSIONS[i].id;save();go('workout')}
-function openSess(id){S.cur=id;showLast=true;save();go('workout')}
+function openSess(id){S.cur=id;showLast=true;S.wmode='lift';S.trainView='session';save();go('train')}
 
-function vPlan(){
-  const nx=nextSession();let h=`<div class="hdrrow"><div style="flex:1"><h1>Plan</h1><div class="muted small">Training protocol // Block ${S.block||1} · 10-week contract. Tap a day to open it.</div></div><div class="jag" style="width:84px;height:84px">${JAG_BADGE}</div></div>`;
-  {const td=today(),k=recipeFor(td);h+=`<div class="banner">MEAL PREP // This week: ${esc(PLAN_FOOD[k].name)} — prep ${esc(prepDayFor(td))}. ${esc(PREP[k])}. 7 containers: 4 fridge, 3 freezer.</div>`;}
-  let lastW=null;
-  SESSIONS.forEach(s=>{
-    if(s.wlabel!==lastW){h+=`<h2>${esc(s.wlabel)}</h2>`;lastW=s.wlabel}
-    const st=sessionStatus(s.id);
-    const sk=log(s.id)&&log(s.id).skipped;
-    h+=`<div class="sess ${st} ${s.id===nx?'next':''}" onclick="openSess('${s.id}')"><div class="st"><span>${sk?'↷':st==='done'?'✓':st==='prog'?'•':''}</span></div>
-      <div><div style="font-weight:600">${esc(s.name)}</div><div class="muted small">${fmtDate(s.date)}${sk?' · skipped':log(s.id)&&log(s.id).date?' · done '+fmtDate(log(s.id).date):''}</div></div></div>`;
-  });
-  $('view').innerHTML=h;
-}
 
 function lineChart(series,opts){
   // series: [{name,color,pts:[{x:Date ms,y,label}]}]
@@ -946,15 +817,13 @@ function liftHistory(exid){
     const top=Math.max(...L.ex[exid].filter(z=>z.done&&z.w>0).map(z=>z.w));tops.push({x,y:top});});
   return {pts,tops};
 }
-function vProgress(){
+function liftProgressHtml(){
   if(!S.chartLift)S.chartLift='pbench';
   const lift=MAIN_LIFTS.find(l=>l.id===S.chartLift)||MAIN_LIFTS[0];const hh=liftHistory(lift.id);
-  let h=`<h1>Progress</h1><div class="card"><select onchange="S.chartLift=this.value;save();vProgress()">${MAIN_LIFTS.map(l=>`<option value="${l.id}" ${l.id===lift.id?'selected':''}>${l.name}</option>`).join('')}</select>
+  let h=`<div class="card"><select onchange="S.chartLift=this.value;save();renderKeep()">${MAIN_LIFTS.map(l=>`<option value="${l.id}" ${l.id===lift.id?'selected':''}>${l.name}</option>`).join('')}</select>
     <div style="margin-top:10px">${lineChart([{name:'Estimated 1RM',color:lift.c,pts:hh.pts},{name:'Heaviest set',color:'#8b93a1',pts:hh.tops,dash:true}],{})}</div>`;
   if(hh.pts.length){const f=hh.pts[0].y,l=hh.pts[hh.pts.length-1].y;h+=`<div class="grid2" style="margin-top:10px"><div class="stat"><div class="v">${l} lb</div><div class="l">Latest est. 1RM</div></div><div class="stat"><div class="v" style="color:${l>=f?'var(--green)':'var(--red)'}">${l-f>=0?'+':''}${l-f} lb</div><div class="l">Since first log</div></div></div>`}
   h+=`</div>`;
-  const bw=S.bw.map(b=>({x:new Date(b.d+'T12:00:00').getTime(),y:b.v}));
-  h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Body weight</div>${lineChart([{name:'Body weight (lb)',color:'#c58bff',pts:bw}],{})}</div>`;
   // weekly volume
   const vol={};histEntries().forEach(({s,L})=>{let v=0;Object.values(L.ex).forEach(a=>a.forEach(x=>{if(x.done&&x.w>0&&x.r>0)v+=x.w*x.r}));if(v){const k=s.wlabel;vol[k]=(vol[k]||0)+v}});
   const keys=Object.keys(vol);let bars='';
@@ -964,15 +833,14 @@ function vProgress(){
   const {bests}=prMap();const ids=Object.keys(bests).sort((a,b)=>bests[b].e1-bests[a].e1);
   h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Personal records</div>${ids.length?ids.map(id=>`<div class="row" style="padding:7px 0;border-bottom:1px solid var(--line)" onclick="showHistory('${id}')"><div style="flex:1"><div style="font-weight:600">${esc(exName(id))}</div><div class="muted small">${bests[id].w?bests[id].w+' lb':'BW'} × ${bests[id].r} · ${fmtDate(bests[id].date)}</div></div><div style="font-weight:800">${bests[id].w?bests[id].e1+' lb':''}</div></div>`).join(''):'<div class="muted small">Log some sets to see your records.</div>'}</div>`;
   const done=SESSIONS.filter(s=>{const L=log(s.id);return L&&L.finished&&!L.skipped}).length;
-  h+=mtCharts();
   h+=`<div class="grid2"><div class="stat"><div class="v">${done} / ${SESSIONS.length}</div><div class="l">Workouts finished</div></div><div class="stat"><div class="v">${S.bw.length?S.bw[S.bw.length-1].v:'—'} lb</div><div class="l">Latest body weight</div></div></div>`;
-  $('view').innerHTML=h;
+  return h;
 }
 
 function vMaxes(){
   const M=maxes(),m=S.maxes;
   const row=(k,label,v,src)=>`<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line)"><div style="flex:1"><div style="font-weight:600">${label}</div><div class="muted small">${src}</div></div><div style="font-size:20px;font-weight:800">${v} lb</div></div>`;
-  let h=`<h1>Maxes</h1><div class="muted small">Weights in the program are calculated from these. They update automatically when you log a test set.</div>
+  let h=backLink('more','More')+`<h1>Maxes</h1><div class="muted small">Weights in the program are calculated from these. They update automatically when you log a test set.</div>
   <div class="card">${row('bench','3-Count Paused Bench',M.bench,M.src.bench)}${row('incline','Slight Incline Bench',M.incline,'Projected: 88.9% of paused bench')}
   ${row('cgb','Close-Grip Bench',M.cgb,'Projected: 107.4% of paused bench')}${row('rdl','Romanian Deadlift',M.rdl,M.src.rdl)}
   ${row('front','Front Squat',M.front,M.src.front)}${row('front8','Front Squat 8-rep max',M.front8,M.src.front8)}</div>
@@ -980,8 +848,7 @@ function vMaxes(){
   <div class="card grid2">${[['bench','Paused bench %'],['incline','Incline %'],['cgb','Close-grip %'],['rdl','RDL %'],['front','Front squat %']].map(([k,l])=>`<div class="field"><label>${l}</label><input inputmode="numeric" value="${m.adj[k]}" onchange="setAdj('${k}',this.value)"></div>`).join('')}</div>
   <h2>Starting estimates</h2><div class="muted small">Used only until you log the Week 2 tests.</div>
   <div class="card grid2">${[['bench','Paused bench'],['rdl','RDL'],['front','Front squat']].map(([k,l])=>`<div class="field"><label>${l} (lb)</label><input inputmode="numeric" value="${m.start[k]}" onchange="setStart('${k}',this.value)"></div>`).join('')}</div>
-  <h2>Body weight</h2><div class="card"><div class="row"><div class="field" style="flex:1"><label>Today's weight (lb)</label><input id="bwIn" inputmode="decimal" placeholder="${S.bw.length?S.bw[S.bw.length-1].v:''}"></div><button class="btn blue" style="margin-top:18px" onclick="addBW()">Save</button></div>
-  <div class="muted small" style="margin-top:8px">Weigh in once a week, same time of day.</div></div>`;
+  `;
   const rt=m.retest;if(Object.keys(rt).length){h+=`<h2>Next block (Week 10 re-test)</h2><div class="card">${rt.bench?row('','Paused Bench',rt.bench,'Week 10 re-test'):''}${rt.rdl?row('','RDL',rt.rdl,'Week 10 re-test'):''}</div>`}
   $('view').innerHTML=h;
 }
@@ -1023,20 +890,8 @@ function downloadExport(){S.lastExport=Date.now();save();const txt=JSON.stringif
 function showText(){S.lastExport=Date.now();save();$('expTxt').style.display='block';$('expTxt').value=JSON.stringify(buildExport());$('expTxt').select()}
 function importFile(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const j=JSON.parse(rd.result);const st=j.raw_state||j;
   if(!isObj(st)||!isObj(st.logs)||!isObj(st.maxes))throw new Error('bad');if(!confirm('Replace the data on this phone with this backup?'))return;S=repair(st);S.rev=lastRev;S.tab='workout';FD=null;buildSessions();save();keepGoodCopy();toast('Backup restored');go('workout')}catch(e){toast('That file is not a Recomp Tracker backup')}};rd.readAsText(f);inp.value=''}
-function vMore(){
-  const done=SESSIONS.filter(s=>sessionStatus(s.id)==='done').length;
-  $('view').innerHTML=`<h1>Export</h1>
-  <div class="card"><div style="font-weight:700">Send your log to Claude</div><div class="muted small" style="margin:6px 0 10px">Creates one file with every workout, your maxes and body weight. After Week 10, upload it to the chat to build the next block. Also do this every week or two as a backup — deleting the app icon deletes the data on your phone.</div>
-  <button class="btn blue" style="width:100%" onclick="shareExport()">Export / Share file</button>
-  <div class="row" style="margin-top:8px"><button class="btn sm" onclick="downloadExport()">Download instead</button><button class="btn sm" onclick="showText()">Show as text</button></div>
-  <textarea id="expTxt" style="display:none;margin-top:8px" readonly></textarea></div>
-  <div class="card"><div style="font-weight:700">Restore a backup</div><div class="muted small" style="margin:6px 0 10px">Pick a file you exported before (for a new phone, or after reinstalling).</div>
-  <input type="file" accept=".json,application/json" onchange="importFile(this)"></div>
-  <div class="card"><div class="row"><div style="flex:1"><div style="font-weight:700">App version</div><div class="muted small" style="font-family:var(--mono)">BUILD ${BUILD}</div></div><button class="btn sm" onclick="forceUpdate()">Check for update</button></div></div>
-  <div class="card small muted">Last backup: ${S.lastExport?new Date(S.lastExport).toLocaleDateString():'never'} · ${done} of ${SESSIONS.length} workouts finished · Data saved on this phone only · Works with no internet once installed.</div>`;
-}
 
-$('jagMini').innerHTML='<img src="mascot-head.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block;border:1px solid #24303c">';
+$('jagMini').innerHTML='<img src="mascot-head.png" alt="">';
 /* =========================================================
    FUEL — food tracker (offline). Macros come from the meal plan workbook.
    Food items share one shape {name,kcal,p,c,f,barcode?} so a barcode
@@ -1107,7 +962,7 @@ function logSaved(i){const f=S.foods[i];if(!f)return;logFood(f,'saved');closeShe
 function delSaved(i){if(!S.foods[i]||!confirm('Delete saved food "'+S.foods[i].name.slice(0,40)+'"?'))return;S.foods.splice(i,1);save();foodSheet('saved')}
 function vFuelKeep(){const y=window.scrollY;vFuel();window.scrollTo(0,y)}
 function macroGauge(val,goal,label,unit,color,size){const f=goal?val/goal:0;
-  return `<div style="text-align:center"><svg class="gauge" width="${size}" height="${size}" viewBox="0 0 100 100">${gaugeSVG(Math.min(1,f),String(Math.round(val)),unit,(label==='kcal'&&f>1.05)?'#ff3b3b':color,null)}</svg>
+  return `<div style="text-align:center"><svg class="gauge" width="${size}" height="${size}" viewBox="0 0 100 100">${gaugeSVG(Math.min(1,f),String(Math.round(val)),unit,(label==='kcal'&&f>1.05)?'#e2142d':color,null)}</svg>
     <div class="lbl" style="font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">${label} / ${goal}</div></div>`}
 function foodSheet(kind){
   const field=(id,l,ph,mode)=>`<div class="field"><label>${l}</label><input id="${id}" inputmode="${mode||'decimal'}" placeholder="${ph||''}"></div>`;
@@ -1143,7 +998,7 @@ function checkin(){const d=today(),avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.leng
   const days=[];for(let i=0;i<7;i++){const t=totals(addDays(d,-i));if(t.kcal>0)days.push(t.kcal)}
   const kc=avg(days),last=S.checkins[S.checkins.length-1],recent=last&&last.date>addDays(d,-6)&&last.date<=d;let change=null,msg;
   const rate=tr?(Math.abs(tr.perWeek)<0.05?'Weight flat':`${tr.perWeek<0?'Down':'Up'} ${Math.abs(tr.perWeek).toFixed(1)} lb/week`)+` (trend of ${tr.n} weigh-ins).`:'';
-  if(!tr)msg='Need 3+ weigh-ins spread over at least a week (last 14 days). The Workout screen asks on Mon & Thu.';
+  if(!tr)msg='Need 3+ weigh-ins spread over at least a week (last 14 days). Log your weight on Today each morning.';
   else if(days.length<4)msg=rate+' Log food at least 4 of the last 7 days for a calorie suggestion.';
   else if(recent)msg=rate+` Targets changed ${fmtDate(last.date)} — give it a week before changing again.`;
   else if(tr.perWeek>-0.2){if(S.targets.rest.kcal<=KC_FLOOR.rest)msg=rate+` Calories are at the safety floor (${KC_FLOOR.rest}) — don't cut more. Check portions and eating out, or add two 20-min bike rides a week.`;
@@ -1161,13 +1016,14 @@ function vFuel(){
   ensureFuel();
   const d=fuelDay(),F=S.food[d]||{items:[],water:0},T=tgt(d),t=totals(d),tr=isTrainDay(d),k=recipeFor(d),m2=meal2For(d);
   const isToday=d===today();
-  let h=`<div class="hdrrow"><div style="flex:1"><h1>Fuel</h1><div class="muted small">Intake log // ${FLAT_CARBS?'daily target · same carbs every day':(tr?'training':'rest')+' day targets'}</div></div></div>
-  <div class="row" style="margin:10px 0"><button class="btn sm" onclick="moveFuel(-1)">‹</button><div style="flex:1;text-align:center;font-family:var(--mono);letter-spacing:1px">${isToday?'TODAY · ':''}${fmtDate(d)}</div><button class="btn sm" onclick="moveFuel(1)">›</button></div>
-  <div class="card"><div class="row" style="justify-content:center;gap:4px">${macroGauge(t.kcal,T.kcal,'kcal','KCAL','#eef3f8',128)}</div>
-    <div class="row" style="justify-content:space-around;margin-top:4px">${macroGauge(t.p,T.p,'Protein','G','#8fd3ff',88)}${macroGauge(t.c,T.c,'Carbs','G','#f5d33a',88)}${macroGauge(t.f,T.f,'Fat','G','#ff8a3d',88)}</div>
+  let h=`<div class="hdrrow"><div style="flex:1"><h1>Fuel</h1><div class="muted small">${FLAT_CARBS?'Daily target · same carbs every day':(tr?'Training':'Rest')+' day targets'}</div></div></div>
+  <div class="row" style="margin:10px 0"><button class="btn sm" onclick="moveFuel(-1)">‹</button><div style="flex:1;text-align:center;font-weight:600">${isToday?'Today · ':''}${fmtDate(d)}</div><button class="btn sm" onclick="moveFuel(1)">›</button></div>
+  <div class="card"><div class="row" style="justify-content:center;gap:4px">${macroGauge(t.kcal,T.kcal,'kcal','KCAL','#f5f5f7',128)}</div>
+    <div class="row" style="justify-content:space-around;margin-top:4px">${macroGauge(t.p,T.p,'Protein','G','#30d158',88)}${macroGauge(t.c,T.c,'Carbs','G','#d4a84b',88)}${macroGauge(t.f,T.f,'Fat','G','#ff8a3d',88)}</div>
     <div style="text-align:center;margin-top:8px;font-family:var(--mono);font-size:13px">${t.p>=T.p?'Protein target met ✓':`<b>${Math.round(T.p-t.p)} g</b> protein to go · ${Math.max(0,Math.round(T.kcal-t.kcal))} kcal left`}</div>
     ${FLAT_CARBS?'':`<div style="text-align:center;margin-top:8px"><button class="mini" onclick="toggleTrain()">${tr?'Training day':'Rest day'} — tap to switch</button></div>`}</div>
-  <div class="card"><div style="font-weight:700;margin-bottom:8px">Plan meals</div>
+  <div class="hint">Meal prep this week: ${esc(PLAN_FOOD[k].name)} — prep ${esc(prepDayFor(d))}. ${esc(PREP[k])}. 7 containers: 4 fridge, 3 freezer.</div>
+  <div class="card"><div style="font-weight:600;margin-bottom:8px">Plan meals</div>
     <button class="sess" style="width:100%;text-align:left" onclick="logMeal1()"><div style="flex:1"><div style="font-weight:600">Meal 1 — Chorizo & egg scramble + yogurt</div><div class="muted small">920 kcal · P83 C27 F52</div></div><span class="mini">+ Log</span></button>
     <button class="sess" style="width:100%;text-align:left" onclick="logMeal2()"><div style="flex:1"><div style="font-weight:600">Meal 2 — ${PLAN_FOOD[k].name} bowl</div><div class="muted small">${m2.kcal} kcal · P${m2.p} C${m2.c} F${m2.f}${FLAT_CARBS||tr?' · + 2 tortillas':''}</div>${m2.adj.text?`<div class="small" style="color:var(--gold);margin-top:2px">Adjusted for your target: ${esc(m2.adj.text)}</div>`:''}</div><span class="mini">+ Log</span></button>
     <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px"><button class="mini" onclick="logFood(PLAN_FOOD.tort,'plan');toast('Tortillas logged');vFuelKeep()">+ 2 tortillas</button>
@@ -1183,7 +1039,6 @@ function vFuel(){
   h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Weekly check-in</div>
     <div class="grid2" style="margin-bottom:8px"><div class="stat"><div class="v">${ci.rate!=null?(ci.rate>0?'+':'')+ci.rate.toFixed(1):'—'}</div><div class="l">Trend lb/week${ci.w1!=null?' · now '+ci.w1.toFixed(1):''}</div></div><div class="stat"><div class="v">${ci.kc!=null?Math.round(ci.kc):'—'}</div><div class="l">Avg kcal (${ci.days} days)</div></div></div>
     <div class="small" style="line-height:1.4">${esc(ci.msg)}</div>
-    <div class="row" style="margin-top:10px"><div class="field" style="flex:1"><label>Log today's weight (lb)</label><input id="bwIn" inputmode="decimal" placeholder="${S.bw.length?S.bw[S.bw.length-1].v:''}"></div><button class="btn blue" style="margin-top:18px" onclick="addBW();vFuelKeep()">Save</button></div>
     ${ci.change?`<button class="btn blue" style="width:100%;margin-top:10px" onclick="applyCheckin(${ci.change})">Apply ${ci.change>0?'+':''}${ci.change} kcal to targets</button>`:''}
     <div class="muted small" style="margin-top:8px">${FLAT_CARBS?`Daily target: ${S.targets.train.kcal} kcal · ${S.targets.train.c} g carbs every day · protein ${S.targets.train.p} g · floor ${KC_FLOOR.train}`:`Targets: rest ${S.targets.rest.kcal} kcal · training ${S.targets.train.kcal} kcal · protein ${S.targets.rest.p} g · floor ${KC_FLOOR.rest}/${KC_FLOOR.train}`}</div></div>`;
   $('view').innerHTML=h;
@@ -1192,6 +1047,8 @@ function vFuel(){
 // Coach's how-tos (Ambush Muay Thai blog, via the fight knowledge base), mirrored for a southpaw.
 // c=category t=title w=what h=how m=mistakes d=solo drill f=fight to watch
 const MT_BOOK=[
+ {c:"Your coaches' rules",t:'Bread-and-butter combo (boxing coach)',w:'Right jab, left cross, slip, left cross, right hook, roll. It ends on defence, so you leave the exchange safe.',h:['At least one round in every shadowboxing and bag session','Slip to the outside of their cross; roll under their hook','Keep the last left cross as hard as the first'],d:'Shadowbox it slowly 10 times, then at speed; on the bag, the slip and roll happen in the air.'},
+ {c:"Your coaches' rules",t:'Disengage defensively',w:'Every exit is part of the combo.',h:['Finish every combination with a slip, roll, block or check','Exit at an angle — pivot or step off the centre line, never straight back','Hands up and chin down until you are out of range; eyes on them the whole way','In Muay Thai, leave with a teep, frame or check ready — kicks reach farther than punches'],m:'Admiring your work with hands down; backing straight out.',d:'Film day (Wednesday) checks this — it is the first item on the video scorecard.'},
  {c:'Punching',t:'The hook (Coach Elton)',w:'A curved punch around the guard. Your lead hook is the right hand.',h:['Let the arm extend to reach the target','Travel on an oval path, not a circle','Tighten the arc at contact — that snap is the acceleration','Drive through, aiming toward their opposite shoulder','Finish with elbow and hip turned so bodyweight lands'],m:'Pulling the arm short, stopping at the surface, arm-only hooks with no hip turn.',d:'Speed bag and heavy bag, filmed from side and front: check the oval path and the finished hip.',f:'Donaire vs Montiel (2011) · Trinidad vs Vargas (2000)'},
  {c:'Punching',t:'Doubling up',w:'Two punches with the same hand at different levels. They defend the first and open the second.',h:['Lead hand low then high, then rear hand low then high (Bradley)','Ward\'s "3 high, 3 low": hook to the head, then hook to the body','For you: right hook head, right hook body (spleen side vs orthodox)','Also drill a light left to the head, then a full left to the body (their liver)'],d:'Tape a head line and a body line on the bag; take a small step to load the punching-side foot before the second shot.',f:'Gatti vs Ward I, round 9 · Bradley vs Rios'},
  {c:'Punching',t:'The body hook (Hatton)',w:'"Head first, left hook, left hook."',h:['Touch the head first; step the punching-side foot a few inches out and load it','Twist from the legs through the hips; other hand stays up','Vs the jab: wait for it, slip and step in one motion, rip to the floating rib, hands up, spin off','For you: slip right, step the right foot out, right body hook — your left is now lined up','Inside: elbows inside theirs, dip, twist, short uppercut to the body'],m:'Leading with the body hook and eating a punch over the top.',d:'Right hook to the body, uppercut through the gap, full-weight hook to the body.',f:'Hatton vs Castillo (2007)'},
@@ -1322,8 +1179,8 @@ const MT_SKILLS=[['Punches',['Jab','Cross','Uppercut','Hook','Overhand']],['Kick
  ['Combos 1–10',['1 Jab, jab','2 Jab, cross','3 Jab, cross, hook','4 Jab, hook, cross','5 Cross, hook, hook','6 Jab, cross, cross','7 Cross, uppercut, hook','8 Jab, uppercut, cross','9 Right kick','10 Left kick']]];
 const MT_SKILL_IDS=[];MT_SKILLS.forEach(([c,a])=>a.forEach(n=>MT_SKILL_IDS.push(c+'|'+n)));
 const MT_LEVELS=['New','Learning','Solid','Sharp'];
-const MT_CHECKS=[['guard','Guard up (hands home)'],['stance','Back to stance after strikes'],['kick','Kick angle & shin contact'],['intent','Forward intent (no backing off)'],['balance','Balance on kicks/knees'],['clinch','No pause into the clinch']];
-const MT_FAULTS=['Hand drops when kicking','Squaring up on kicks','Straight-leg / slap kick','Not returning to stance','Backing off after strikes','Pause before the clinch','Leaning back on knees','Arm-only hook (no hip)','Bending at the waist / looking down','Chin up','Other'];
+const MT_CHECKS=[['exit','Defensive exit (angle, hands up)'],['guard','Guard up (hands home)'],['stance','Back to stance after strikes'],['kick','Kick angle & shin contact'],['intent','Forward intent (no backing off)'],['balance','Balance on kicks/knees'],['clinch','No pause into the clinch']];
+const MT_FAULTS=['Hand drops when kicking','Squaring up on kicks','Straight-leg / slap kick','Not returning to stance','Backing off after strikes','Pause before the clinch','Leaning back on knees','Arm-only hook (no hip)','Bending at the waist / looking down','Chin up','Other','Backing straight out, guard down'];
 
 let MTD=null; // day shown on Muay Thai (never saved)
 const mtDay=()=>MTD||today();
@@ -1346,16 +1203,16 @@ function mtSession(d){
   const blk=Math.ceil(w/4),th=MT_THEMES[w],steps=[];let kicks=null,rpe='4–5';
   const st=(name,rounds,work,rest,note,call)=>steps.push({name,rounds,work,rest,note:note||'',call:call||null});
   if(type==='A'){rpe=blk===1?'6':blk===2?'7–8':'8';kicks=L.shin?Math.ceil(W.kicks/2):W.kicks;
-    st('Rope',1,180,0,'Easy, last 30 sec fast');st('Shadowboxing',2,180,60,'70% speed on: '+th[0],'shadow');
+    st('Rope',1,180,0,'Easy, last 30 sec fast');st('Shadowboxing',2,180,60,'70% speed on: '+th[0]+' · 1 round of the bread-and-butter combo','shadow');
     {const dl=/Deload/.test(W.wave),sets=dl?2:3,reps=blk===1?'5 smooth':blk===2?'4 fast':'3 explosive';
      st('Landmine punch-press',sets,20,60,`${sets} × ${reps} per side from fight stance; an extra set on the LEFT (power side). Every rep fast — stop if it slows`);
      st('Rotational landmine throw',sets,20,60,`${sets} × ${reps} each way. Turn from the hips and pivot the back foot like a kick; ribs stay stacked, no low-back twist`)}
     if(thu&&W.hiit){st('Technical bag',2,180,60,th[0],'bag');st('HIIT',W.hiit,20,40,'All-out punches + kicks 20 sec, easy shadowboxing 40 sec')}
     else if(thu&&W.tech){st('Technical bag',2,180,60,th[0]+' — no HIIT this week','bag')}
     else if(thu&&W.sim){st(W.test?'TEST: fight simulation':'Fight simulation',W.sim,180,60,'Build: technical → setups → pressure & power → clinch & knees → everything'+(W.burst?'. Last round in 30-sec bursts':'')+(W.test?'. Log effort and heart rate after':''),'sim')}
-    else st('Bag rounds',W.mon[0],W.mon[1]*60,60,'R1 technical (theme only) · middle: setups, combos ending in a kick · last: pressure, body, finish low','bag');
+    else st('Bag rounds',W.mon[0],W.mon[1]*60,60,'R1 technical (theme only) · middle: setups, combos ending in a kick, one round of bread-and-butter · last: pressure, body, finish low','bag');
     st('Hard kicks',0,0,0,'Count below. Stop early if shins are still sore');st('Cool-down',1,120,0,'Easy shadowboxing, nose breathing')}
-  else if(type==='B'){st('Rope',1,180,0);st('Shadowboxing',3,180,30,'R1 footwork only · R2 '+th[0]+' · R3 everything'+(dow===1?' · this week\'s closed-stance round: imagine a SOUTHPAW opponent in R3':''),'shadow');
+  else if(type==='B'){st('Rope',1,180,0);st('Shadowboxing',3,180,30,'R1 footwork only · R2 '+th[0]+' · R3 everything, incl. the bread-and-butter combo'+(dow===1?' · this week\'s closed-stance round: imagine a SOUTHPAW opponent in R3':''),'shadow');
     st('Bag drills',3,180,60,'RPE 4–5: '+th[1]+'. Taped target, return to knee guard after kicks');
     st('Speed bag',2,120,30,w>=7&&w<=9?'Finish each round with 10 sec of slips':'Rhythm and hand speed')}
   else if(type==='C'){rpe='3–4';st('Rope',1,180,0);st('Film yourself',3,180,30,'Phone side-on or at 45°','shadow');st('Watch it back',1,480,0,'Compare with '+MT_FIGHTS[th[2]][0]+'. Pick ONE fault below');
@@ -1370,6 +1227,7 @@ function mtSession(d){
 /* ---------- combo caller: speaks Ambush numbers during work rounds (offline voices) ---------- */
 const CALLER={
   pick(kind,w,r,rounds){const blk=Math.max(1,Math.ceil(w/4)),th=MT_THEMES[Math.min(12,Math.max(1,w))],R=Math.random;
+    if(R()<0.12)return 'bread and butter';
     if(r===rounds&&R()<0.5)return th[3][Math.floor(R()*th[3].length)];
     if(R()<0.25)return th[3][Math.floor(R()*th[3].length)];
     const pool=blk===1?[1,2,3,4,9,10,2,2]:blk===2?[1,2,3,4,5,6,7,8,9,10]:[1,2,3,4,5,6,7,8,9,10,3,6];
@@ -1414,11 +1272,7 @@ function beep1(){try{unlockAudio();if(!AC)return;const o=AC.createOscillator(),g
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&RT.st)RT.tick()});
 
 /* ---------- navigation ---------- */
-function modeSwitch(){const m=S.wmode==='mt';return `<div class="seg"><button class="${m?'':'on'}" onclick="setWMode('lift')">LIFT</button><button class="${m?'on':''}" onclick="setWMode('mt')">MUAY THAI</button></div>`}
-function setWMode(m){S.wmode=m;if(m==='mt')MTD=null;save();go('workout')}
-function mtTabs(){const t=S.mtTab||'today';return `<div class="seg seg2">${[['today','TODAY'],['prog','PROGRESS'],['book','PLAYBOOK'],['film','FILM']].map(([k,l])=>`<button class="${t===k?'on':''}" onclick="mtGo('${k}')">${l}</button>`).join('')}</div>`}
-function mtGo(t){S.mtTab=t;if(t==='today')MTD=null;save();vMuay();window.scrollTo(0,0)}
-function vMuayKeep(){const y=window.scrollY;vMuay();window.scrollTo(0,y)}
+function mtGo(t){if(t==='prog'){S.progView='mt';save();go('progress');return}if(t==='book'){go('book');return}if(t==='film'){go('film');return}setTrain('mt','session');window.scrollTo(0,0)}
 function mtMove(n){MTD=addDays(mtDay(),n);if(MTD===today())MTD=null;vMuay()}
 
 /* ---------- logging actions ---------- */
@@ -1459,47 +1313,40 @@ function mtAdherence(){const st=mtStart(),td=today();if(td<st)return null;const 
 /* ---------- views ---------- */
 let mtShowFilms=false,mtOpen={};
 function mtToggleOpen(k){mtOpen[k]=!mtOpen[k];vMuayKeep()}
-function vMuay(){
-  const t=S.mtTab||'today';
-  let h=modeSwitch()+`<div class="hdrrow"><div style="flex:1"><h1>Muay Thai</h1><div class="muted small">Southpaw · solo striking // 12-week plan · starts ${fmtDate(mtStart())}</div></div><div class="jag" style="width:72px;height:72px">${JAG_BADGE}</div></div>`+mtTabs();
-  h+=t==='prog'?mtProgressHtml():t==='book'?mtPlaybookHtml():t==='film'?mtFilmHtml():mtTodayHtml();
-  $('view').innerHTML=h;if(t==='today')RT.draw();
-}
+function vMuay(){if(S.trainView==='program'){vMtProgram();return}$('view').innerHTML=modeSwitch()+mtTodayHtml();RT.draw()}
 function mtTodayHtml(){
   const d=mtDay(),s=mtSession(d),L=S.mt[d]||{},isToday=d===today(),w=mtWeek(d);
-  let h=`<div class="row" style="margin:10px 0"><button class="btn sm" onclick="mtMove(-1)">‹</button><div style="flex:1;text-align:center;font-family:var(--mono);letter-spacing:1px">${isToday?'TODAY · ':''}${fmtDate(d)}</div><button class="btn sm" onclick="mtMove(1)">›</button></div>`;
+  let h=`<div class="row" style="margin-top:6px"><span class="muted small">Southpaw · solo striking</span><div class="spacer"></div><button class="quiet" onclick="setTrain('mt','program')">Program ›</button></div>
+  <div class="row" style="margin:6px 0"><button class="btn sm" onclick="mtMove(-1)">‹</button><div style="flex:1;text-align:center;font-weight:600">${isToday?'Today · ':''}${fmtDate(d)}</div><button class="btn sm" onclick="mtMove(1)">›</button></div>`;
   h+=`<div id="rtBox" class="card" style="position:sticky;top:6px;z-index:15;display:none;border:1px solid var(--line)"></div>`;
-  const stk=mtStreak();
-  h+=`<div class="card"><div class="row" style="gap:8px"><div style="flex:1"><div style="font-weight:700">Morning resting HR</div><div class="muted small">Before getting up, 1 min${mtRhrAvg(d)?' · 7-day avg '+Math.round(mtRhrAvg(d)):''}${stk?` · 🔥 ${stk}-day streak`:''}</div></div>
-    <input class="cell" style="width:84px" inputmode="numeric" placeholder="bpm" value="${L.rhr??''}" onchange="mtSet('rhr',this.value)"></div></div>`;
   if(!s){
-    if(w<1){const pv=mtSession(mtStart());h+=`<div class="banner">PLAN STARTS ${fmtDate(mtStart()).toUpperCase()} — ${daysBetween(d,mtStart())} days out. Use the arrows to preview Week 1, log resting HR to build a baseline, and rate your skills on PROGRESS to set your starting point.</div>
+    if(w<1){const pv=mtSession(mtStart());h+=`<div class="banner">Plan starts ${fmtDate(mtStart())} — ${daysBetween(d,mtStart())} days out. Preview Week 1 with the arrows, log resting HR on Today to build a baseline, and rate your skills in Progress › Muay Thai.</div>
       <div class="card"><div style="font-weight:700">Week 1 theme: ${esc(pv.theme[0])}</div><div class="muted small" style="margin-top:4px">${esc(pv.theme[1])}</div><div class="small" style="margin-top:6px">Fight to study: <b>${esc(pv.fight[0])}</b> (${esc(pv.fight[1])})</div>
       <button class="btn blue" style="width:100%;margin-top:10px" onclick="MTD='${mtStart()}';vMuay()">Preview Week 1, Day 1 ›</button></div>`}
-    else h+=`<div class="banner">12-WEEK PLAN COMPLETE — check PROGRESS, export your data (Export tab) and bring it to Claude to build the next phase.</div>`;
+    else h+=`<div class="banner">12-week plan complete — check Progress, then export (More › Backup) and bring the file to Claude for the next phase.</div>`;
     return h}
   const lf=mtLoadInfo(d),tw=mtTestWeek(d);
-  h+=`<div class="card"><div class="serial">MT-W${String(w).padStart(2,'0')}-${['MON','TUE','WED','THU','FRI','SAT','SUN'][s.dow]}<span class="bc" style="width:34px;height:9px"></span></div>
-    <div class="row"><div style="flex:1"><div style="font-size:20px;font-weight:800">${esc(s.name)}</div><div class="muted small">Week ${w} of 12 · Block ${s.blk} · ${esc(s.W.wave)} · ${s.high?'HIGH day':s.type==='E'?'Recovery':'Low day'} · target effort ${s.rpe}</div></div>
+  h+=`<div class="card">
+    <div class="row"><div style="flex:1"><div style="font-size:20px;font-weight:800">${esc(s.name)}</div><div class="muted small">Week ${w} of 12 · ${esc(s.W.wave)} · ${s.high?'Hard day':s.type==='E'?'Recovery':'Easy day'} · effort ${s.rpe}${L.rhr?' · resting HR '+L.rhr:''}</div></div>
     ${L.done?'<span class="chip" style="color:var(--green)">Done ✓</span>':''}</div>
-    <div class="ex-target" style="margin-top:8px">Theme: ${esc(s.theme[0])}</div><div class="ex-note">${esc(s.theme[1])}</div>
-    <div class="small">Fight to study: <b>${esc(s.fight[0])}</b> <span class="muted">(${esc(s.fight[1])})</span>${S.mtFilm[s.fightIdx]?' <span style="color:var(--green)">watched ✓</span>':''}</div></div>`;
-  if(s.high&&s.liftDay)h+=`<div class="banner">LIFT DAY TOO — lift first, or strike 3+ hours later.</div>`;
-  if(mtRhrAlert(d)&&(s.high||L.swap))h+=`<div class="banner">RECOVERY WARNING — resting HR 5+ bpm above your average two mornings running. ${L.swap?'Swapped to technique today.':`<button class="btn sm blue" style="margin-left:6px" onclick="mtFlag('swap')">Swap to technique</button>`}</div>`;
-  if(lf&&lf.over)h+=`<div class="banner">LOAD SPIKE — this week ${lf.cur} vs ${Math.round(lf.avg)} average. Keep the rest of the week easy (stay within +20%).</div>`;
-  if((w===5||w===9)&&!MT_GATES[w-1].every((_,i)=>S.mtGate[(w-1)+'_'+i]))h+=`<div class="banner">BLOCK GATE NOT CONFIRMED — tick the week ${w-1} checklist, or repeat the deload week. <button class="btn sm" style="margin-left:6px" onclick="mtRepeatDeload()">Repeat deload</button></div>`;
-  if(tw&&s.dow===3)h+=`<div class="banner">TEST WEEK ${tw} — after your hardest round today, log heart rate and rope skips in the test card below.</div>`;
+    <div class="ex-target" style="margin-top:10px;font-family:var(--sans);font-weight:600">${esc(s.theme[0])}</div><div class="ex-note">${esc(s.theme[1])}</div>
+    <div class="small" style="margin-top:6px">Fight to study: <b>${esc(s.fight[0])}</b> <span class="muted">(${esc(s.fight[1])})</span>${S.mtFilm[s.fightIdx]?' <span style="color:var(--green)">watched ✓</span>':''}</div></div>`;
+  if(s.high&&s.liftDay)h+=`<div class="banner">Lifting day too — lift first, or strike 3+ hours later.</div>`;
+  if(mtRhrAlert(d)&&(s.high||L.swap))h+=`<div class="banner">Recovery — resting HR 5+ bpm above your average two mornings running. ${L.swap?'Swapped to technique today.':`<button class="btn sm blue" style="margin-left:6px" onclick="mtFlag('swap')">Swap to technique</button>`}</div>`;
+  if(lf&&lf.over)h+=`<div class="banner">Load spike — this week ${lf.cur} vs ${Math.round(lf.avg)} average. Keep the rest of the week easy (stay within +20%).</div>`;
+  if((w===5||w===9)&&!MT_GATES[w-1].every((_,i)=>S.mtGate[(w-1)+'_'+i]))h+=`<div class="banner">Block gate not confirmed — tick the week ${w-1} checklist, or repeat the deload week. <button class="btn sm" style="margin-left:6px" onclick="mtRepeatDeload()">Repeat deload</button></div>`;
+  if(tw&&s.dow===3)h+=`<div class="banner">Test week ${tw} — after your hardest round today, open the monthly test below.</div>`;
   // steps
-  h+=`<div class="card"><div style="font-weight:700">Session</div><div class="chips" style="margin-bottom:4px"><button class="mini" onclick="mtCallerToggle()">Caller: ${S.mtCaller===false?'OFF':'ON'}</button>${S.mtCaller===false?'':'<button class="mini" onclick="mtTestVoice()">🔊 Test voice</button>'}${s.type==='Q'?`<button class="mini" onclick="mtFlag('busy')">Full session</button>`:`<button class="mini" onclick="mtFlag('busy')">Busy day: 15 min</button>`}${L.swap&&!L.busy?`<button class="mini" onclick="mtFlag('swap')">Undo swap</button>`:''}</div>`;
+  h+=`<div class="card"><div style="font-weight:600">Session</div><div class="chips" style="margin-bottom:4px">${S.mtCaller===false?'':'<button class="mini" onclick="mtTestVoice()">🔊 Test voice</button>'}${s.type==='Q'?`<button class="mini" onclick="mtFlag('busy')">Full session</button>`:`<button class="mini" onclick="mtFlag('busy')">Busy day: 15 min</button>`}${L.swap&&!L.busy?`<button class="mini" onclick="mtFlag('swap')">Undo swap</button>`:''}</div>`;
   s.steps.forEach((p,i)=>{const dn=L.steps&&L.steps[i];const tm=p.rounds?(p.rounds>1?`${p.rounds} × ${p.work>=60?(p.work/60)+' min':p.work+' sec'}${p.rest?` / ${p.rest} sec rest`:''}`:(p.work>=60?(p.work/60)+' min':'')):'';
-    h+=`<div class="mtstep ${dn?'done':''}"><button class="chk" onclick="mtStep(${i})">${CHECK}</button><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(p.name)} <span class="muted small" style="font-family:var(--mono)">${tm}</span></div>${p.note?`<div class="muted small">${esc(p.note)}</div>`:''}
-      ${p.call&&S.mtCaller!==false?'<div class="small" style="color:var(--gold)">🔊 Combo caller calls Ambush numbers in this step</div>':''}
+    h+=`<div class="mtstep ${dn?'done':''}"><button class="chk" onclick="mtStep(${i})">${CHECK}</button><div style="flex:1;min-width:0"><div style="font-weight:600">${esc(p.name)}${p.call&&S.mtCaller!==false?' <span class="muted small" title="Combo caller">🔊</span>':''}</div><div class="muted small mono">${tm}</div>${p.note?`<div class="muted small">${esc(p.note)}</div>`:''}
       ${p.name==='Hard kicks'?mtKickHtml(s,L):''}${/^(Landmine|Rotational landmine)/.test(p.name)?mtLmHtml(p.name,L):''}</div>${p.rounds?`<button class="mini" onclick="RT.start(${i})">▶ Timer</button>`:''}</div>`});
-  h+=`<div class="row" style="margin-top:8px"><button class="mini" onclick="mtToggleOpen('combos')">${mtOpen.combos?'Hide':'Show'} combo numbers</button></div>${mtOpen.combos?mtCombosHtml():''}`;
+  h+=`<div class="hint" style="margin-top:12px"><b>Every combo ends on defence</b> — slip, roll, block or check, then exit at an angle with hands up and chin down.</div>
+  <div class="row" style="margin-top:4px"><button class="mini" onclick="mtToggleOpen('combos')">${mtOpen.combos?'Hide':'Show'} combo numbers</button></div>${mtOpen.combos?mtCombosHtml():''}`;
   if(s.type==='C'){h+=`<div style="margin-top:10px;font-weight:700">Fault I'm fixing</div><div class="chips">${MT_FAULTS.map((f,i)=>`<button class="mini ${L.fault===i?'on':''}" onclick="mtFault(${i})">${esc(f)}</button>`).join('')}</div>
     <div class="field" style="margin-top:8px"><label>Note on the fix</label><input value="${esc(L.fix||'')}" placeholder="e.g. right hand drops when I kick" onchange="mtFix(this.value)"></div>`}
   h+=`</div>`;
-  if(tw)h+=mtTestCardHtml(tw,s.dow===2||s.dow===3);
+  if(tw)h+=mtOpen.test?mtTestCardHtml(tw,s.dow===2||s.dow===3)+`<button class="quiet" onclick="mtToggleOpen('test')">Hide monthly test ▴</button>`:`<button class="tcard" onclick="mtToggleOpen('test')"><div class="kicker"><b>●</b>Monthly test · week ${tw}</div><div class="ttl" style="font-size:16px">Heart-rate recovery, rope skips, video scorecard</div><div class="go" style="margin-top:6px">Open ›</div></button>`;
   // log
   h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Log</div><div class="grid2">
     <div class="field"><label>Effort 0–10 (30 min after)</label><input id="mtRpe" inputmode="decimal" value="${L.rpe??''}" placeholder="${esc(s.rpe)}" onchange="mtSet('rpe',this.value)"></div>
@@ -1511,13 +1358,13 @@ function mtTodayHtml(){
     ${MT_GATES[w].map((g,i)=>`<label class="row small" style="gap:8px;padding:4px 0"><input type="checkbox" ${S.mtGate[w+'_'+i]?'checked':''} onchange="mtGate(${w},${i})"> ${esc(g)}</label>`).join('')}
     <button class="btn sm" style="margin-top:6px" onclick="mtRepeatDeload()">Repeat deload week</button></div>`}
   return h}
-function mtCombosHtml(){return `<div class="combos">${MT_COMBOS.slice(1).map((c,i)=>`<div><b>${i+1}</b> ${esc(c[0])}<div class="muted small">${esc(c[1])}</div></div>`).join('')}</div><div class="muted small" style="margin-top:4px">Southpaw: jab = right, cross = left. Add a body shot, knee, kick or feint to any number — "3 plus left kick" is the Dutch finish.</div>`}
+function mtCombosHtml(){return `<div class="combos">${MT_COMBOS.slice(1).map((c,i)=>`<div><b>${i+1}</b> ${esc(c[0])}<div class="muted small">${esc(c[1])}</div></div>`).join('')}<div style="grid-column:1/-1"><b>B&amp;B</b> Bread and butter (boxing coach)<div class="muted small">Right jab, left cross, slip, left cross, right hook, roll</div></div></div><div class="muted small" style="margin-top:4px">Southpaw: jab = right, cross = left. Add a body shot, knee, kick or feint to any number — "3 plus left kick" is the Dutch finish.</div>`}
 // landmine load: plate weight on the bar end, per exercise; shows last time + progression cue
 function mtLmKey(n){return /punch/i.test(n)?'lmp':'lmr'}
 function mtLmLast(k,d){const ds=Object.keys(S.mt).filter(x=>isDate(x)&&x<d&&S.mt[x][k]).sort();return ds.length?S.mt[ds[ds.length-1]][k]:null}
 function mtLmSet(n,v){const k=mtLmKey(n);let x=v===''?null:+v;if(x!=null&&(!isFinite(x)||x<0||x>200)){toast('Plate weight 0–200 lb');vMuayKeep();return}const L=mtLog(mtDay());L[k]=x;save();vMuayKeep()}
 function mtLmHtml(n,L){const k=mtLmKey(n),last=mtLmLast(k,mtDay());return `<div class="row" style="gap:8px;margin-top:6px;flex-wrap:nowrap"><span class="small muted" style="white-space:nowrap">Plate on bar</span>
-  <input class="cell" style="width:70px;height:32px;flex:none" inputmode="decimal" value="${L[k]??''}" placeholder="${last??'10'}" onchange="mtLmSet('${n}',this.value)"><span class="small muted">lb${last!=null?' · last '+last:''}</span></div>
+  <input class="cell" style="width:76px;flex:none" inputmode="decimal" value="${L[k]??''}" placeholder="${last??'10'}" onchange="mtLmSet('${n}',this.value)"><span class="small muted">lb${last!=null?' · last '+last:''}</span></div>
   <div class="muted small">Add 5–10 lb only when every rep stays fast</div>`}
 function mtKickHtml(s,L){const t=s.kicks,kl=L.kl||0,kr=L.kr||0,c=v=>v>t?'var(--red)':v===t?'var(--green)':'#fff';
   return `<div class="row" style="gap:10px;margin-top:6px;flex-wrap:wrap">${[['l','Left',kl],['r','Right',kr]].map(([k,n,v])=>`<div class="row" style="gap:4px"><span class="small muted">${n}</span>
@@ -1543,7 +1390,7 @@ function mtProgressHtml(){
     ${row('Rope skips / min',w=>{const T=S.mtTests[w];return T&&T.skips!=null?T.skips:null},1)}
     ${row('Video score /5',w=>{const a=mtScoreAvg(w);return a?Math.round(a*10)/10:null},1)}
     ${row('Fight-sim effort',w=>{const T=S.mtTests[w];return T&&T.sim!=null?T.sim:null},-1)}</table>
-    <div class="muted small" style="margin-top:6px">Green = better than your first test. Enter tests on the TODAY screen during weeks 1, 4, 8 and 12.</div></div>`;
+    <div class="muted small" style="margin-top:6px">Green = better than your first test. Tests open from the Muay Thai session in weeks 1, 4, 8 and 12.</div></div>`;
   // skill chart + scorecard chart
   const pts=[];const ds=new Set();Object.values(S.mtSkills).forEach(a=>a.forEach(x=>ds.add(x.d)));[...ds].sort().forEach(d=>pts.push({x:new Date(d+'T12:00:00').getTime(),y:Math.round(mtSkillAvgOn(d)*100)/100}));
   h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Skill level over time</div>${pts.length?lineChart([{name:'Curriculum mastered (% of all skills at Sharp)',color:'#f5d33a',pts:pts.map(p=>({x:p.x,y:Math.round(p.y/3*1000)/10}))}],{}):'<div class="muted small">Rate your skills below to start the chart.</div>'}</div>`;
@@ -1552,28 +1399,25 @@ function mtProgressHtml(){
   h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Faults you've worked on</div>${fk.length?fk.map(k=>`<div class="row small" style="margin:4px 0"><div style="flex:1">${esc(MT_FAULTS[k])}</div><div style="width:40%;background:#14171c;height:12px"><div style="width:${fc[k]/fc[fk[0]]*100}%;background:var(--red);height:12px"></div></div><div style="width:30px;text-align:right">${fc[k]}</div></div>`).join('')+'<div class="muted small" style="margin-top:4px">A fault that keeps coming back is worth a private lesson.</div>':'<div class="muted small">Pick a fault on Film &amp; fix days (Wednesdays).</div>'}</div>`;
   h+=mtCharts(true);
   // skill checklist
-  h+=`<h2>Skill checklist <span class="muted small">Ambush Level 1</span></h2><div class="muted small">Tap a level. 0 new · 1 learning · 2 solid · 3 sharp. Re-rate every few weeks; the chart above tracks it. Clinch is partner work — rate it after a class or private.</div>`;
+  h+=`<h2>Skill checklist <span class="muted small">Ambush Level 1</span></h2><div class="hint">0 new · 1 learning · 2 solid · 3 sharp. Re-rate every few weeks. Clinch is partner work — rate it after a class.</div>`;
   MT_SKILLS.forEach(([cat,list])=>{const avg=list.reduce((s,n)=>s+mtSkillLevel(cat+'|'+n),0)/list.length;const open=mtOpen['sk_'+cat];
     h+=`<div class="card"><div class="row" onclick="mtToggleOpen('sk_${cat.replace(/'/g,'')}')" style="cursor:pointer"><div style="font-weight:700;flex:1">${esc(cat)}</div><div class="muted small" style="font-family:var(--mono)">${avg.toFixed(1)} / 3 ${open?'▾':'▸'}</div></div>
-      <div style="height:6px;background:#14171c;margin-top:6px"><div style="height:6px;width:${avg/3*100}%;background:var(--gold)"></div></div>
+      <div class="sk-bar"><div style="width:${avg/3*100}%"></div></div>
       ${open?list.map(n=>{const id=cat+'|'+n,v=mtSkillLevel(id);return `<div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><div class="small" style="flex:1;min-width:120px">${esc(n)}</div><div class="rate">${[0,1,2,3].map(x=>`<button class="${v===x?'on':''}" title="${MT_LEVELS[x]}" onclick="mtRate('${id.replace(/'/g,"\\'")}',${x})">${x}</button>`).join('')}</div></div>`}).join(''):''}</div>`});
   return h}
 function mtFilmHtml(){const cat=S.mtFilmCat||'all',n=Object.keys(S.mtFilm).length;
   const weekOf={};for(let w=1;w<=12;w++)weekOf[MT_THEMES[w][2]]=w;
   const list=MT_FIGHTS.map((f,i)=>({f,i})).filter(({f,i})=>cat==='all'||(cat==='todo'?!S.mtFilm[i]:f[3].split(' ').includes(cat)));
-  let h=`<div class="card"><div class="row"><div style="font-weight:700;flex:1">Film library</div><div class="muted small" style="font-family:var(--mono)">${n}/${MT_FIGHTS.length} WATCHED</div></div>
-    <div style="height:6px;background:#14171c;margin-top:6px"><div style="height:6px;width:${n/MT_FIGHTS.length*100}%;background:var(--green)"></div></div>
-    <div class="chips" style="margin-top:8px">${MT_FCATS.map(([k,l])=>`<button class="mini ${cat===k?'on':''}" onclick="mtFilmCat('${k}')">${l}</button>`).join('')}</div>
-    <div class="muted small" style="margin-top:6px">Watch once for fun, then again for the "watch for" item only. Rows 1–8 are closest to your build.</div></div>`;
-  h+=list.map(({f,i})=>`<div class="card film ${S.mtFilm[i]?'seen':''}"><div class="row" style="gap:10px;align-items:flex-start"><input type="checkbox" style="margin-top:4px;width:20px;height:20px" ${S.mtFilm[i]?'checked':''} onchange="mtFilmToggle(${i})">
-    <div style="flex:1;min-width:0"><div style="font-weight:700">${i+1}. ${esc(f[0])}</div><div class="muted small">${esc(f[1])}${weekOf[i]?` · <span style="color:var(--gold)">Week ${weekOf[i]} fight</span>`:''}${f[3].includes('south')?' · southpaw':''}</div>
-    <div class="small" style="margin-top:4px">Watch for: ${esc(f[2])}</div>
-    <input class="filmnote" placeholder="Your notes…" value="${esc(S.mtFilmNote[i]||'')}" onchange="mtFilmNote(${i},this.value)"></div></div></div>`).join('')||'<div class="muted small">Nothing here.</div>';
-  return h+`<div class="muted small" style="margin:10px 0">Analysts: Jack Slack, Lawrence Kenshin, Connor Ruebusch, Sylvie's Muay Thai Library (8limbs.us).</div>`}
-function mtPlaybookHtml(){let h=`<div class="card"><div style="font-weight:700">Ambush combo numbers (southpaw)</div>${mtCombosHtml()}</div>
-  <div class="muted small" style="margin:6px 0 10px">Coach Jason &amp; Coach Elton's how-tos from the Ambush blog, mirrored for a southpaw. Tap one to open. "Clinch happens": train it every week.</div>`;
+  let h=`<div class="muted small">${n} of ${MT_FIGHTS.length} watched · watch once for fun, then again for the "watch for" item only</div><div class="bar" style="margin:8px 0"><div style="width:${n/MT_FIGHTS.length*100}%;background:var(--green)"></div></div>
+    <div class="chips">${MT_FCATS.map(([k,l])=>`<button class="mini ${cat===k?'on':''}" onclick="mtFilmCat('${k}')">${l}</button>`).join('')}</div><div class="card" style="padding:0 16px">`;
+  h+=list.map(({f,i})=>{const o=mtOpen['f'+i];return `<div class="film ${S.mtFilm[i]?'seen':''}"><div class="filmrow"><input type="checkbox" ${S.mtFilm[i]?'checked':''} onchange="mtFilmToggle(${i})" aria-label="Watched">
+    <button style="flex:1;text-align:left;min-height:44px" onclick="mtToggleOpen('f${i}')"><div class="ttl" style="font-weight:600">${esc(f[0])}</div><div class="muted small">${esc(f[1])}${weekOf[i]?' · Week '+weekOf[i]:''}${f[3].includes('south')?' · southpaw':''}${S.mtFilmNote[i]?' · 📝':''}</div></button><span class="chev muted">${o?'▾':'▸'}</span></div>
+    ${o?`<div style="padding:0 0 14px 34px"><div class="small">Watch for: ${esc(f[2])}</div><input class="filmnote" placeholder="Your notes…" value="${esc(S.mtFilmNote[i]||'')}" onchange="mtFilmNote(${i},this.value)"></div>`:''}</div>`}).join('')||'<div class="muted small" style="padding:14px 0">Nothing here.</div>';
+  return h+`</div><div class="hint">Analysts: Jack Slack, Lawrence Kenshin, Connor Ruebusch, Sylvie's Muay Thai Library (8limbs.us).</div>`}
+function mtPlaybookHtml(){let h=`<div class="card"><div style="font-weight:600">Combo numbers (southpaw)</div>${mtCombosHtml()}</div>
+  <div class="hint">Your coaches' how-tos, mirrored for a southpaw. Tap one to open.</div>`;
   let cat='';MT_BOOK.forEach((b,i)=>{if(b.c!==cat){cat=b.c;h+=`<h2>${esc(cat)}</h2>`}const o=mtOpen['b'+i];
-    h+=`<div class="card"><div class="row" style="cursor:pointer" onclick="mtToggleOpen('b${i}')"><div style="font-weight:700;flex:1">${esc(b.t)}</div><span class="muted">${o?'▾':'▸'}</span></div>
+    h+=`<div class="card" style="padding:4px 16px"><button class="listrow" style="border:0" onclick="mtToggleOpen('b${i}')"><div style="font-weight:600;flex:1">${esc(b.t)}</div><span class="chev">${o?'▾':'▸'}</span></button>
       ${o?`${b.w?`<div class="small" style="margin-top:6px">${esc(b.w)}</div>`:''}${b.h?`<ul class="book">${b.h.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
       ${b.m?`<div class="small"><b>Mistakes:</b> ${esc(b.m)}</div>`:''}${b.d?`<div class="small" style="margin-top:4px;color:var(--gold)"><b>Solo drill:</b> ${esc(b.d)}</div>`:''}${b.f?`<div class="muted small" style="margin-top:4px">Watch: ${esc(b.f)}</div>`:''}`:''}</div>`});
   h+=`<h2>Gear the gym recommends</h2><div class="card small"><ul class="book"><li>Wraps: 180" Mexican-style (no gel or slip-on)</li><li>Bag gloves: Fairtex BGV9, 10–12 oz — lighter lets you drill at full speed</li><li>Sparring gloves: Twins 16 oz (never on the bag)</li><li>Shins: Windy or Fairtex, to the bottom of the kneecap</li><li>Steel Thai cup, SISU or Damage Control mouthguard, Venum elbow pads</li></ul></div>
@@ -1584,13 +1428,156 @@ function mtCharts(inMt){const days=Object.keys(S.mt).filter(isDate).sort();if(!d
   const rhr=days.filter(d=>S.mt[d].rhr).map(d=>({x:new Date(d+'T12:00:00').getTime(),y:S.mt[d].rhr}));
   const wk={};days.forEach(d=>{const w=mtWeek(d);if(w<1)return;const x=S.mt[d];wk[w]=wk[w]||{load:0,kicks:0,done:0};if(x.rpe!=null&&x.min)wk[w].load+=x.rpe*x.min;wk[w].kicks+=(x.kl||0)+(x.kr||0);if(x.done)wk[w].done++});
   const keys=Object.keys(wk).map(Number).sort((a,b)=>a-b);const bar=(f,c,u)=>{const mx=Math.max(1,...keys.map(k=>wk[k][f]));return keys.map(k=>`<div class="row small" style="margin:4px 0"><div style="width:54px" class="muted">Wk ${k}</div><div style="flex:1;background:#14171c;height:14px"><div style="width:${wk[k][f]/mx*100}%;background:${c};height:14px"></div></div><div style="width:64px;text-align:right">${wk[k][f]}${u}</div></div>`).join('')||'<div class="muted small">No sessions logged yet.</div>'};
-  return `${inMt?'':'<h2>Muay Thai</h2>'}<div class="card"><div style="font-weight:700;margin-bottom:6px">Morning resting HR</div>${lineChart([{name:'Resting HR (bpm)',color:'#ff3b3b',pts:rhr}],{empty:'Log resting HR on the Muay Thai screen.'})}</div>
+  return `
     <div class="card"><div style="font-weight:700;margin-bottom:6px">Sessions done per week</div>${bar('done','var(--green)','/7')}</div>
     <div class="card"><div style="font-weight:700;margin-bottom:6px">Weekly load (effort × minutes)</div>${bar('load','var(--blue)','')}</div>
     <div class="card"><div style="font-weight:700;margin-bottom:6px">Hard kicks per week (both legs)</div>${bar('kicks','#f5d33a','')}</div>`}
 
+/* =========================================================
+   NAVIGATION — Today · Train · Fuel · Progress · More
+   ========================================================= */
+const TABS=[['today','Today','<circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/>'],
+  ['train','Train','<path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/>'],
+  ['fuel','Fuel','<path d="M12 3c1 4 5 6 5 11a5 5 0 0 1-10 0c0-3 2-4 2-7 1 1 2 2 2 4 1-2 1-5 1-8z"/>'],
+  ['progress','Progress','<path d="M4 19l5-6 4 3 7-9"/><path d="M4 4v15h16"/>'],
+  ['more','More','<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>']];
+const ROUTE_PARENT={maxes:'more',book:'more',film:'more'};
+function renderTabs(){const cur=ROUTE_PARENT[S.tab]||S.tab;$('tabbar').innerHTML=TABS.map(([k,l,ic])=>`<button class="tab ${cur===k?'on':''}" onclick="go('${k}')"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ic}</svg>${l}</button>`).join('')}
+function go(tab,keepScroll){
+  if(tab==='workout'){S.trainView='session';tab='train'}            // legacy route: the lift/MT session
+  if(tab==='plan'){S.wmode='lift';S.trainView='program';tab='train'} // legacy route: the lifting program
+  if(tab==='fuel'&&S.tab!=='fuel')FD=null;S.tab=tab;save();renderTabs();render();if(!keepScroll)window.scrollTo(0,0)}
+function render(){try{({today:vToday,train:vTrain,fuel:vFuel,progress:vProgress,more:vMore,maxes:vMaxes,book:vBook,film:vFilm}[S.tab]||vToday)()}
+  catch(e){console.error(e);$('view').innerHTML=`<h1>Something went wrong</h1><div class="card">This screen hit a problem, but your data is still saved on this phone.<div class="muted small" style="margin-top:6px;font-family:var(--mono)">${esc(String(e&&e.message||e).slice(0,160))}</div></div>
+    <div class="card"><button class="btn blue" style="width:100%" onclick="downloadExport()">Download my data (safe copy)</button>
+    <button class="btn" style="width:100%;margin-top:8px" onclick="restoreGoodCopy()">Restore last good copy</button>
+    <button class="btn" style="width:100%;margin-top:8px" onclick="go('${S.tab==='today'?'more':'today'}')">Go to another screen</button></div>`}}
+function renderKeep(){const y=window.scrollY;render();window.scrollTo(0,y)}
+function vFuelKeep(){renderKeep()}
+function vMuayKeep(){renderKeep()}
+function vTrain(){if(S.trainView==='program'){S.wmode==='mt'?vMtProgram():vPlan();return}vWorkout()}
+function setTrain(mode,view){if(mode){S.wmode=mode;if(mode==='mt')MTD=null}if(view)S.trainView=view;save();go('train')}
+function setWMode(m){setTrain(m,'session')}
+function modeSwitch(){const m=S.wmode==='mt';return `<div class="seg"><button class="${m?'':'on'}" onclick="setTrain('lift')">Lift</button><button class="${m?'on':''}" onclick="setTrain('mt')">Muay Thai</button></div>`}
+function backLink(to,label){return `<button class="quiet" onclick="go('${to}')">‹ ${label}</button>`}
+function listRow(title,sub,onclick){return `<button class="listrow" onclick="${onclick}"><div style="flex:1"><div>${title}</div>${sub?`<div class="muted small">${sub}</div>`:''}</div><span class="chev">›</span></button>`}
+
+/* =========================================================
+   TODAY — one screen for the whole day
+   ========================================================= */
+function tOpenLift(id){S.cur=id;showLast=true;S.wmode='lift';S.trainView='session';save();go('train')}
+function mtOpenDay(d){S.wmode='mt';S.trainView='session';MTD=d===today()?null:d;save();go('train')}
+function todayAlert(){
+  if(LOAD_NOTE)return {t:LOAD_NOTE};
+  const b=behindInfo();if(b)return {t:`${b.n} lifting session${b.n>1?'s':''} overdue — ${b.nx.name} was due ${fmtDate(b.nx.date)}.`,a:'Catch up',on:`tOpenLift('${b.nx.id}')`};
+  const ms=mtSession(today());if(ms&&ms.high&&mtRhrAlert(today())&&!(S.mt[today()]||{}).swap)return {t:'Resting heart rate is up two mornings in a row. Consider swapping today\'s hard striking for technique.',a:'Open session',on:`mtOpenDay('${today()}')`};
+  if(needsBackup())return {t:'No backup in 14+ days. Deleting the app icon deletes your data.',a:'Back up now',on:"go('more')"};
+  return null}
+function vToday(){
+  const td=today(),D=new Date(td+'T12:00:00'),bw=S.bw.find(b=>b.d===td),M=S.mt[td]||{};
+  let h=`<div class="today-date">${D.toLocaleDateString(undefined,{weekday:'long'})}</div><h1>${D.toLocaleDateString(undefined,{month:'long',day:'numeric'})}</h1>`;
+  const al=todayAlert();if(al)h+=`<div class="banner">${esc(al.t)}${al.a?`<div><button class="btn sm blue" onclick="${al.on}">${al.a}</button></div>`:''}</div>`;
+  // morning check
+  h+=`<div class="card"><div class="row"><div style="font-weight:600;flex:1">Morning check</div>${bw&&M.rhr?'<span class="pill ok">Done ✓</span>':'<span class="muted small">Before breakfast</span>'}</div>
+    <div class="checkrow"><div class="field"><label>Weight (lb)${bw?' ✓':''}</label><input id="bwIn" class="cell" inputmode="decimal" value="${bw?bw.v:''}" placeholder="${S.bw.length?S.bw[S.bw.length-1].v:'lb'}" onchange="addBW()"></div>
+    <div class="field"><label>Resting HR (bpm)${M.rhr?' ✓':''}</label><input class="cell" inputmode="numeric" value="${M.rhr??''}" placeholder="${mtRhrAvg(td)?Math.round(mtRhrAvg(td)):'bpm'}" onchange="MTD=null;mtSet('rhr',this.value)"></div></div></div>`;
+  // lifting
+  {let k='Lifting',ttl,sub,pill='',on;
+   if(allDone()){ttl='Block complete';sub='Export, then start the next block';on="setTrain('lift','session')"}
+   else{const ls=SESSIONS.find(s=>s.date===td&&s.id!=='tra'&&s.id!=='trb');
+     if(ls){const st=sessionStatus(ls.id),L=log(ls.id);let tot=0,dn=0;ls.ex.forEach(e=>{if(e.warm)return;const a=(L&&L.ex[e.id])||[];tot+=Math.max(exSets(e),a.length);dn+=a.filter(x=>x.done).length});
+       ttl=ls.name;sub=`${ls.wlabel} · ${ls.ex.filter(e=>!e.warm).length} exercises`;pill=st==='done'?(L&&L.skipped?'<span class="pill">Skipped</span>':'<span class="pill ok">Done ✓</span>'):st==='prog'?`<span class="pill">${Math.round(dn/Math.max(1,tot)*100)}%</span>`:'<span class="pill">Today</span>';on=`tOpenLift('${ls.id}')`}
+     else{const nx=sess(nextSession());ttl='Rest day';sub=`Next: ${nx.name} · ${fmtDate(nx.date)}`;on=`tOpenLift('${nx.id}')`}}
+   h+=`<button class="tcard" onclick="${on}"><div class="kicker"><b>●</b>${k}<span class="spacer"></span>${pill}</div><div class="ttl">${esc(ttl)}</div><div class="muted small">${esc(sub)}</div><div class="go" style="margin-top:10px">${pill.includes('Done')?'Review ›':'Open ›'}</div></button>`}
+  // muay thai
+  {const s=mtSession(td),w=mtWeek(td);let ttl,sub,pill='',on;
+   if(!s){if(w<1){ttl=`Starts ${fmtDate(mtStart())}`;sub='12-week solo striking plan · preview Week 1';on=`mtOpenDay('${mtStart()}')`}else{ttl='12-week plan complete';sub='See Progress, then export';on="mtGo('prog')"}}
+   else{ttl=s.name;sub=`Week ${w} · ${s.theme[0]}`;pill=M.done?'<span class="pill ok">Done ✓</span>':`<span class="pill">${s.high?'Hard':s.type==='E'?'Recovery':'Easy'} · ${s.type==='Q'?15:s.type==='E'?20:30} min</span>`;on=`mtOpenDay('${td}')`}
+   h+=`<button class="tcard" onclick="${on}"><div class="kicker"><b>●</b>Muay Thai<span class="spacer"></span>${pill}</div><div class="ttl">${esc(ttl)}</div><div class="muted small">${esc(sub)}</div><div class="go" style="margin-top:10px">${M.done?'Review ›':'Open ›'}</div></button>`}
+  // fuel
+  {FD=null;const T=tgt(td),t=totals(td),p=Math.min(1,t.kcal/T.kcal),pp=Math.min(1,t.p/T.p),m1=planLogged('Meal 1'),m2=planLogged('Meal 2');
+   h+=`<div class="tcard"><div class="kicker"><b>●</b>Fuel<span class="spacer"></span><span class="mono small">${Math.round(t.kcal)} / ${T.kcal} kcal</span></div>
+     <div class="bar" style="margin-top:10px"><div style="width:${p*100}%;background:var(--text)"></div></div>
+     <div class="row small" style="margin-top:8px"><span class="muted" style="flex:1">Protein</span><span class="mono">${Math.round(t.p)} / ${T.p} g</span></div>
+     <div class="bar" style="margin-top:6px"><div style="width:${pp*100}%;background:var(--green)"></div></div>
+     <div class="row" style="gap:8px;margin-top:12px"><button class="btn sm" style="flex:1" onclick="logMeal1()">${m1?'Meal 1 ✓':'+ Meal 1'}</button><button class="btn sm" style="flex:1" onclick="logMeal2()">${m2?'Meal 2 ✓':'+ Meal 2'}</button></div>
+     <button class="go quiet" style="color:var(--red)" onclick="go('fuel')">Open Fuel ›</button></div>`}
+  $('view').innerHTML=h}
+
+/* =========================================================
+   PROGRESS — Lift · Muay Thai · Body
+   ========================================================= */
+function vProgress(){const pv=S.progView||'lift';
+  let h=`<h1>Progress</h1><div class="seg">${[['lift','Lift'],['mt','Muay Thai'],['body','Body']].map(([k,l])=>`<button class="${pv===k?'on':''}" onclick="S.progView='${k}';save();renderKeep()">${l}</button>`).join('')}</div>`;
+  h+=pv==='mt'?mtProgressHtml():pv==='body'?bodyProgressHtml():liftProgressHtml();$('view').innerHTML=h}
+function bodyProgressHtml(){const bw=S.bw.map(b=>({x:new Date(b.d+'T12:00:00').getTime(),y:b.v})),tr=weightTrend();
+  const rhr=Object.keys(S.mt).filter(isDate).sort().filter(d=>S.mt[d].rhr).map(d=>({x:new Date(d+'T12:00:00').getTime(),y:S.mt[d].rhr}));
+  return `<div class="grid2" style="margin-top:12px"><div class="stat"><div class="v">${S.bw.length?S.bw[S.bw.length-1].v:'—'}</div><div class="l">Latest weight (lb)</div></div>
+    <div class="stat"><div class="v">${tr?(tr.perWeek>0?'+':'')+tr.perWeek.toFixed(1):'—'}</div><div class="l">Trend lb / week</div></div>
+    <div class="stat"><div class="v">${mtRhr7(today())??'—'}</div><div class="l">Resting HR, 7-day</div></div><div class="stat"><div class="v">${S.targets.train.kcal}</div><div class="l">Daily kcal target</div></div></div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Body weight</div>${lineChart([{name:'Body weight (lb)',color:'#f5f5f7',pts:bw}],{empty:'Log weight on Today each morning.'})}</div>
+    <div class="card"><div style="font-weight:600;margin-bottom:6px">Morning resting heart rate</div>${lineChart([{name:'Resting HR (bpm)',color:'#e2142d',pts:rhr}],{empty:'Log resting HR on Today each morning.'})}</div>`}
+
+/* =========================================================
+   MORE — Maxes · Playbook · Film · Backup · Settings
+   ========================================================= */
+function vMore(){
+  const done=SESSIONS.filter(s=>sessionStatus(s.id)==='done').length,nf=Object.keys(S.mtFilm).length;
+  $('view').innerHTML=`<h1>More</h1>
+  <div class="card" style="padding:4px 16px">${listRow('Maxes','Training maxes and adjustments',"go('maxes')")}${listRow('Playbook','Combo numbers and your coaches’ how-tos',"go('book')")}${listRow('Film library',`${nf} of ${MT_FIGHTS.length} watched`,"go('film')")}</div>
+  <h2>Backup &amp; export</h2>
+  <div class="card"><div style="font-weight:600">Send your log to Claude</div><div class="muted small" style="margin:6px 0 12px">One file with every workout, Muay Thai session, meal and weigh-in. Bring it to the chat after the block. Back up every week or two — deleting the app icon deletes the data on this phone.</div>
+  <button class="btn blue" style="width:100%" onclick="shareExport()">Export / Share file</button>
+  <div class="row" style="margin-top:8px"><button class="btn sm" style="flex:1" onclick="downloadExport()">Download</button><button class="btn sm" style="flex:1" onclick="showText()">Show as text</button></div>
+  <textarea id="expTxt" style="display:none;margin-top:8px" readonly></textarea>
+  <div class="muted small" style="margin-top:10px">Last backup: ${S.lastExport?new Date(S.lastExport).toLocaleDateString():'never'} · ${done} of ${SESSIONS.length} lifts finished</div></div>
+  <div class="card"><div style="font-weight:600">Restore a backup</div><div class="muted small" style="margin:6px 0 10px">Pick a file you exported before (new phone, or after reinstalling).</div>
+  <label class="btn" style="width:100%">Choose backup file<input type="file" accept=".json,application/json" onchange="importFile(this)" style="position:absolute;width:1px;height:1px;opacity:0"></label></div>
+  <h2>Settings</h2>
+  <div class="card" style="padding:4px 16px">
+    <div class="listrow"><div style="flex:1"><div>Combo caller</div><div class="muted small">Speaks combo numbers during Muay Thai rounds</div></div><button class="mini ${S.mtCaller===false?'':'on'}" onclick="mtCallerToggle()">${S.mtCaller===false?'Off':'On'}</button></div>
+    <div class="listrow"><div style="flex:1"><div>Test voice</div><div class="muted small">Check the sound before training</div></div><button class="mini" onclick="mtTestVoice()">Play</button></div>
+    <div class="listrow"><div style="flex:1"><div>Bar weight</div><div class="muted small">Used by the plate calculator</div></div><input class="cell" style="width:80px" inputmode="decimal" value="${S.bar}" onchange="const v=parseFloat(this.value);if(v>=5&&v<=100){S.bar=v;save();toast('Bar set to '+v+' lb')}else{toast('Bar weight 5–100 lb');renderKeep()}"></div>
+    <div class="listrow"><div style="flex:1"><div>App version</div><div class="muted small mono">Build ${BUILD} · works offline</div></div><button class="mini" onclick="forceUpdate()">Check for update</button></div></div>
+  <div class="hint" style="text-align:center;margin-top:18px">OCELOTL//CORP · data stays on this phone</div>`}
+function vBook(){$('view').innerHTML=backLink('more','More')+`<h1>Playbook</h1>`+mtPlaybookHtml()}
+function vFilm(){$('view').innerHTML=backLink('more','More')+`<h1>Film library</h1>`+mtFilmHtml()}
+
+/* =========================================================
+   TRAIN — programs
+   ========================================================= */
+let planOpen={},mtPlanOpen={};
+function vPlan(){
+  const nx=nextSession(),cw=(sess(nx)||{}).wlabel;
+  let h=modeSwitch()+`<div class="row"><h1 style="flex:1">Program</h1><button class="quiet" onclick="setTrain('lift','session')">‹ Session</button></div><div class="muted small">Lifting · Block ${S.block||1} · 10 weeks · tap a day to open it</div>`;
+  const weeks=[];SESSIONS.forEach(s=>{let w=weeks.find(x=>x.l===s.wlabel);if(!w)weeks.push(w={l:s.wlabel,ss:[]});w.ss.push(s)});
+  weeks.forEach((w,wi)=>{const dn=w.ss.filter(s=>sessionStatus(s.id)==='done').length,open=planOpen[wi]??(w.l===cw);
+    h+=`<button class="wkhead" onclick="planOpen[${wi}]=${!open};renderKeep()">${esc(w.l)}<span class="muted">${fmtDate(w.ss[0].date)} · ${dn}/${w.ss.length}</span><span class="spacer"></span><span class="muted">${open?'▾':'▸'}</span></button>`;
+    if(open)w.ss.forEach(s=>{const st=sessionStatus(s.id),L=log(s.id),sk=L&&L.skipped;
+      h+=`<button class="sess ${st} ${s.id===nx?'next':''}" onclick="openSess('${s.id}')"><div class="st">${sk?'↷':st==='done'?'✓':''}</div>
+        <div style="flex:1"><div style="font-weight:600">${esc(s.name)}</div><div class="muted small">${fmtDate(s.date)}${sk?' · skipped':L&&L.date?' · done '+fmtDate(L.date):''}</div></div></button>`})});
+  $('view').innerHTML=h}
+function vMtProgram(){
+  const cw=Math.max(1,Math.min(12,mtWeek(today())));
+  let h=modeSwitch()+`<div class="row"><h1 style="flex:1">Program</h1><button class="quiet" onclick="setTrain('mt','session')">‹ Session</button></div><div class="muted small">Muay Thai · southpaw · 12 weeks from ${fmtDate(mtStart())} · tap a day to open it</div>`;
+  for(let w=1;w<=12;w++){const mon=addDays(mtStart(),(w-1)*7);let dn=0;for(let i=0;i<7;i++){const x=S.mt[addDays(mon,i)];if(x&&x.done)dn++}
+    const open=mtPlanOpen[w]??(w===cw),W=MT_WEEKS[w],th=MT_THEMES[w];
+    h+=`<button class="wkhead" onclick="mtPlanOpen[${w}]=${!open};renderKeep()">Week ${w}<span class="muted">${W.wave} · ${dn}/7</span><span class="spacer"></span><span class="muted">${open?'▾':'▸'}</span></button><div class="muted small" style="margin:-6px 0 6px">${esc(th[0])}</div>`;
+    if(open){for(let i=0;i<7;i++){const d=addDays(mon,i),s=mtSession(d),L=S.mt[d]||{};
+        h+=`<button class="sess ${L.done?'done':''} ${d===today()?'next':''}" onclick="mtOpenDay('${d}')"><div class="st">${L.done?'✓':''}</div><div style="flex:1"><div style="font-weight:600">${esc(s.name)}</div><div class="muted small">${fmtDate(d)} · ${s.high?'Hard':s.type==='E'?'Recovery':'Easy'}</div></div></button>`}
+      if(MT_GATES[w])h+=`<div class="card"><div style="font-weight:600">Gate to Block ${Math.ceil(w/4)+1}</div>${MT_GATES[w].map((g,i)=>`<label class="row small" style="gap:10px;min-height:44px"><input type="checkbox" ${S.mtGate[w+'_'+i]?'checked':''} onchange="mtGate(${w},${i})"> ${esc(g)}</label>`).join('')}</div>`}}
+  $('view').innerHTML=h}
+
+/* exercise ⋯ menu (plates · note · swap · history) */
+function exMenu(exid,plateW){const s=sess(S.cur),L=log(s.id),sw=L&&L.swap&&L.swap[exid];
+  openSheet(`<h2>${esc(exName(exid))}</h2><div class="card" style="padding:4px 16px;margin:0">
+    ${plateW!=null?listRow('Plate calculator','What to load on the bar',`closeSheet();showPlates(${plateW})`):''}
+    ${listRow(S.notes[exid]?'Edit note':'Add a note','Seat height, grip, cable pin, cues',`closeSheet();editNote('${exid}')`)}
+    ${listRow(sw?'Undo swap':'Swap exercise',sw?'Back to '+esc(exName(exid)):'Today only',`closeSheet();swapEx('${exid}')`)}
+    ${listRow('History','Every set you’ve logged',`closeSheet();showHistory('${exid}')`)}</div>`)}
+
 /* boot */
-FD=null;
+FD=null;S.tab='today';
 try{renderTabs();render();if(!$('view').innerText.includes('Screen error'))keepGoodCopy()}catch(e){console.error(e)}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{try{r.update()}catch(e){}}).catch(()=>{}));
   // when a new version takes over, reload once so the screen shows it
