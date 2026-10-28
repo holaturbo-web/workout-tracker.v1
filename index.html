@@ -295,6 +295,11 @@ th:nth-child(5),td:nth-child(5){width:48px}
 .ex-tools{flex-wrap:wrap}
 .hdrrow h1{overflow-wrap:anywhere}
 .behind{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.seg{display:flex;border:1px solid var(--line);margin:6px 0 4px;background:#05080c}
+.seg button{flex:1;padding:9px 0;font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--muted)}
+.seg button.on{background:var(--red,#ff3b3b);color:#fff;font-weight:800;box-shadow:0 0 12px rgba(255,59,59,.35)}
+.mtstep{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.mtstep .chk{margin:0;flex:none}.mtstep.done .chk{background:var(--green)}.mtstep.done .chk svg{stroke:#06210f}.mtstep.done>div{opacity:.6}
 </style>
 </head>
 <body>
@@ -499,6 +504,12 @@ function repair(raw){
   o.archive=(Array.isArray(s.archive)?s.archive:[]).filter(a=>isObj(a)&&Array.isArray(a.order)&&isObj(a.logs));
   o.delFood=(Array.isArray(s.delFood)?s.delFood:[]).map(String).slice(-300);
   o.weighSkip=isDate(s.weighSkip)?s.weighSkip:null;
+  o.wmode=s.wmode==='mt'?'mt':'lift';o.mtShift=Math.round(num(s.mtShift,0,0,365));
+  o.mt={};if(isObj(s.mt))for(const d in s.mt){const x=s.mt[d];if(!isDate(d)||!isObj(x))continue;
+    o.mt[d]={rhr:num(x.rhr,null,30,140),rpe:num(x.rpe,null,0,10),min:num(x.min,null,1,180),kl:Math.round(num(x.kl,0,0,500)),kr:Math.round(num(x.kr,0,0,500)),
+      done:!!x.done,busy:!!x.busy,swap:!!x.swap,shin:!!x.shin,fix:typeof x.fix==='string'?x.fix.slice(0,300):'',steps:isObj(x.steps)?x.steps:{},t:num(x.t,0)}}
+  o.mtFilm={};if(isObj(s.mtFilm))for(const k in s.mtFilm)if(s.mtFilm[k]===true&&+k>=0&&+k<40)o.mtFilm[k]=true;
+  o.mtGate={};if(isObj(s.mtGate))for(const k in s.mtGate)if(s.mtGate[k]===true)o.mtGate[k]=true;
   delete o.fuelDate;
   return o;
 }
@@ -531,6 +542,8 @@ function mergeState(M,T){
   M.notes=Object.assign({},T.notes,M.notes);
   if(T.checkins.length>M.checkins.length){M.checkins=T.checkins;M.targets=T.targets}
   M.lastExport=Math.max(M.lastExport||0,T.lastExport||0)||null;
+  for(const d in T.mt){const a=M.mt[d],b=T.mt[d];if(!a||(b.t||0)>(a.t||0))M.mt[d]=b}
+  M.mtFilm=Object.assign({},T.mtFilm,M.mtFilm);M.mtGate=Object.assign({},T.mtGate,M.mtGate);M.mtShift=Math.max(M.mtShift||0,T.mtShift||0);
   return M}
 function save(){try{
     const cur=readKey(KEY);
@@ -738,7 +751,7 @@ function blockEnd(){let t=0;Object.values(S.logs).forEach(L=>{if(L.end)t=Math.ma
 function vBlockDone(){const blk=S.block||1,M=maxes(),rt=S.maxes.retest,exported=S.lastExport&&S.lastExport>=blockEnd();
   const fin=SESSIONS.filter(s=>{const L=log(s.id);return L&&L.finished&&!L.skipped}).length;
   const nb={bench:rt.bench||M.bench,rdl:rt.rdl||M.rdl,front:M.front};
-  $('view').innerHTML=`<div class="hdrrow"><div style="flex:1"><h1>Block ${blk} complete</h1><div class="muted small">${fin} of ${SESSIONS.length} workouts done</div></div><div class="jag" style="width:84px;height:84px">${JAG_BADGE}</div></div>
+  $('view').innerHTML=modeSwitch()+`<div class="hdrrow"><div style="flex:1"><h1>Block ${blk} complete</h1><div class="muted small">${fin} of ${SESSIONS.length} workouts done</div></div><div class="jag" style="width:84px;height:84px">${JAG_BADGE}</div></div>
   ${LOAD_NOTE?`<div class="banner">${esc(LOAD_NOTE)}</div>`:''}
   <div class="card"><div style="font-weight:700">Step 1 — Export this block</div><div class="muted small" style="margin:6px 0 10px">Send the file to Claude to review the block and tune the next one.</div>
     <button class="btn ${exported?'':'blue'}" style="width:100%" onclick="shareExport().then(()=>renderKeep())">${exported?'Exported ✓ — export again':'Export / Share file'}</button></div>
@@ -753,11 +766,12 @@ function startNextBlock(){
   S.maxes={start:{bench:rt.bench||M.bench,rdl:rt.rdl||M.rdl,front:M.front},tests:{},adj:{bench:100,incline:100,cgb:100,rdl:100,front:100},front8:null,retest:{}};
   S.logs={};S.shifts=[];S.block=blk+1;S.blockStart=nextMonday();buildSessions();S.cur=nextSession();showLast=false;save();go('workout');toast('Block '+S.block+' started')}
 function vWorkout(){
+  if(S.wmode==='mt'){vMuay();return}
   if(allDone()&&!showLast){vBlockDone();return}
   if(!S.cur||!sess(S.cur))S.cur=nextSession();
   const s=sess(S.cur), L=log(s.id), t=targets(s), st=sessionStatus(s.id);
   let elapsed='';if(L&&L.start){const mins=Math.round(((L.end||Date.now())-L.start)/60000);elapsed=Math.floor(mins/60)+':'+String(mins%60).padStart(2,'0')}
-  let h=`<div class="row" style="margin-top:4px"><button class="chip" onclick="go('plan')">‹ ${esc(s.wlabel)}</button><div class="spacer"></div>
+  let h=modeSwitch()+`<div class="row" style="margin-top:4px"><button class="chip" onclick="go('plan')">‹ ${esc(s.wlabel)}</button><div class="spacer"></div>
     ${st==='done'?'<span class="chip" style="color:var(--green)">Finished ✓</span>':`<button class="btn primary" onclick="finish()">Finish</button>`}</div>
     <div class="hdrrow"><div style="flex:1"><h1>${esc(s.name)}</h1><div class="muted small">${fmtDate(s.date)}${L&&L.date&&L.date!==s.date?' · done '+fmtDate(L.date):''}${elapsed?' · ⏱ '+elapsed:''}</div></div>
     ${(()=>{let tot=0,dn=0;s.ex.forEach(e=>{if(e.warm)return;const a=(L&&L.ex[e.id])||[];tot+=Math.max(exSets(e),a.length);dn+=a.filter(x=>x.done).length});const f=tot?dn/tot:0;
@@ -929,6 +943,7 @@ function vProgress(){
   const {bests}=prMap();const ids=Object.keys(bests).sort((a,b)=>bests[b].e1-bests[a].e1);
   h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Personal records</div>${ids.length?ids.map(id=>`<div class="row" style="padding:7px 0;border-bottom:1px solid var(--line)" onclick="showHistory('${id}')"><div style="flex:1"><div style="font-weight:600">${esc(exName(id))}</div><div class="muted small">${bests[id].w?bests[id].w+' lb':'BW'} × ${bests[id].r} · ${fmtDate(bests[id].date)}</div></div><div style="font-weight:800">${bests[id].w?bests[id].e1+' lb':''}</div></div>`).join(''):'<div class="muted small">Log some sets to see your records.</div>'}</div>`;
   const done=SESSIONS.filter(s=>{const L=log(s.id);return L&&L.finished&&!L.skipped}).length;
+  h+=mtCharts();
   h+=`<div class="grid2"><div class="stat"><div class="v">${done} / ${SESSIONS.length}</div><div class="l">Workouts finished</div></div><div class="stat"><div class="v">${S.bw.length?S.bw[S.bw.length-1].v:'—'} lb</div><div class="l">Latest body weight</div></div></div>`;
   $('view').innerHTML=h;
 }
@@ -969,6 +984,8 @@ function buildExport(){
     note:'Upload this file to Claude to review the block and build the next one.',
     maxes_used:{paused_bench:M.bench,incline:M.incline,close_grip:M.cgb,rdl:M.rdl,front_squat:M.front,front_squat_8rm:M.front8},
     exercise_notes:S.notes,personal_records:prMap().bests,
+    muay_thai:{plan_start:mtStart(),film_studied:Object.keys(S.mtFilm).map(i=>MT_FIGHTS[i][0]),gates:S.mtGate,
+      days:Object.keys(S.mt).sort().map(d=>{const x=S.mt[d],s=mtSession(d);return {date:d,week:mtWeek(d),session:s?s.name:null,high_day:s?s.high:null,resting_hr:x.rhr,effort:x.rpe,minutes:x.min,load:x.rpe!=null&&x.min?x.rpe*x.min:null,kicks_left:x.kl,kicks_right:x.kr,kick_target:s?s.kicks:null,done:x.done,busy_day:x.busy,swapped_for_recovery:x.swap,shin_pain:x.shin,fix:x.fix}})},
     nutrition:{targets:S.targets,checkins:S.checkins,saved_foods:S.foods,
       days:Object.keys(S.food||{}).sort().map(d=>({date:d,training_day:isTrainDay(d),totals:totals(d),water_glasses:(S.food[d]||{}).water||0,ate_out:(S.food[d].items||[]).filter(i=>i.src==='out').length,items:S.food[d].items}))},
     maxes_inputs:S.maxes,next_block_retest:S.maxes.retest,bodyweight_log:S.bw,lift_summary:summary,
@@ -1005,7 +1022,7 @@ $('jagMini').innerHTML='<img src="mascot-head.png" alt="" style="width:100%;heig
 const PLAN_FOOD={
   m1:{name:'Meal 1 — Chorizo & egg scramble + yogurt',kcal:920,p:83,c:27,f:52},
   base:{kcal:519,p:29,c:50,f:25},
-  tort:{name:'2 corn tortillas (training day)',kcal:114,p:3,c:24,f:1},
+  tort:{name:'2 corn tortillas',kcal:114,p:3,c:24,f:1},
   A:{name:'Chicken Tinga',kcal:415,p:59,c:10,f:14},
   B:{name:'Picadillo',kcal:550,p:60,c:8,f:29},
   C:{name:'Pork Chile Verde',kcal:543,p:57,c:5,f:32},
@@ -1035,7 +1052,9 @@ function trainedOn(d){return SESSIONS.some(s=>{const L=log(s.id);return L&&L.dat
 function isTrainDay(d){const F=S.food[d];if(F&&(F.train===true||F.train===false))return F.train;
   if(trainedOn(d))return true;if(d<today())return false;
   return SESSIONS.some(s=>s.date===d&&s.id!=='tra'&&s.id!=='trb'&&!(log(s.id)&&log(s.id).skipped))}
-function tgt(d){return isTrainDay(d)?S.targets.train:S.targets.rest}
+// Same carbs every day: with daily striking, every day uses the one daily target and Meal 2 always includes the tortillas
+const FLAT_CARBS=true;
+function tgt(d){return FLAT_CARBS?S.targets.train:isTrainDay(d)?S.targets.train:S.targets.rest}
 function totals(d){const F=S.food[d]||{items:[]};return F.items.reduce((t,i)=>({kcal:t.kcal+i.kcal,p:t.p+i.p,c:t.c+i.c,f:t.f+i.f}),{kcal:0,p:0,c:0,f:0})}
 function logFood(food,src){ensureFuel();const d=fuelDay(),F=fday(d),cl=v=>Math.max(0,Math.round(+v||0));
   F.items.push({id:Date.now()+''+Math.random().toString(36).slice(2,6),name:String(food.name).slice(0,120),kcal:cl(food.kcal),p:cl(food.p),c:cl(food.c),f:cl(food.f),src:src||'quick',t:Date.now(),barcode:food.barcode||null});
@@ -1055,8 +1074,8 @@ function planLogged(prefix){const F=S.food[fuelDay()];return !!(F&&F.items.some(
 function logMeal1(){if(planLogged('Meal 1')&&!confirm('Meal 1 is already logged for this day. Log it again?'))return;logFood(PLAN_FOOD.m1,'plan');toast('Meal 1 logged');vFuelKeep()}
 function logMeal2(){const d=fuelDay();if(planLogged('Meal 2')&&!confirm('Meal 2 is already logged for this day. Log it again?'))return;
   logFood(meal2For(d),'plan');
-  if(isTrainDay(d))logFood(PLAN_FOOD.tort,'plan');
-  toast('Meal 2 logged'+(isTrainDay(d)?' + tortillas':''));vFuelKeep()}
+  const tort=FLAT_CARBS||isTrainDay(d);if(tort)logFood(PLAN_FOOD.tort,'plan');
+  toast('Meal 2 logged'+(tort?' + tortillas':''));vFuelKeep()}
 function delFood(id){const F=fday(fuelDay());F.items=F.items.filter(i=>i.id!==id);S.delFood.push(id);if(S.delFood.length>300)S.delFood=S.delFood.slice(-300);save();vFuelKeep()}
 function setWater(n){const F=fday(fuelDay());F.water=Math.max(0,Math.min(30,Math.round(+n||0)));if(n>30)toast('30 glasses max');save();vFuelKeep()}
 function toggleTrain(){const d=fuelDay(),F=fday(d);F.train=!isTrainDay(d);save();vFuelKeep()}
@@ -1119,15 +1138,15 @@ function vFuel(){
   ensureFuel();
   const d=fuelDay(),F=S.food[d]||{items:[],water:0},T=tgt(d),t=totals(d),tr=isTrainDay(d),k=recipeFor(d),m2=meal2For(d);
   const isToday=d===today();
-  let h=`<div class="hdrrow"><div style="flex:1"><h1>Fuel</h1><div class="muted small">Intake log // ${tr?'training':'rest'} day targets</div></div></div>
+  let h=`<div class="hdrrow"><div style="flex:1"><h1>Fuel</h1><div class="muted small">Intake log // ${FLAT_CARBS?'daily target · same carbs every day':(tr?'training':'rest')+' day targets'}</div></div></div>
   <div class="row" style="margin:10px 0"><button class="btn sm" onclick="moveFuel(-1)">‹</button><div style="flex:1;text-align:center;font-family:var(--mono);letter-spacing:1px">${isToday?'TODAY · ':''}${fmtDate(d)}</div><button class="btn sm" onclick="moveFuel(1)">›</button></div>
   <div class="card"><div class="row" style="justify-content:center;gap:4px">${macroGauge(t.kcal,T.kcal,'kcal','KCAL','#eef3f8',128)}</div>
     <div class="row" style="justify-content:space-around;margin-top:4px">${macroGauge(t.p,T.p,'Protein','G','#8fd3ff',88)}${macroGauge(t.c,T.c,'Carbs','G','#f5d33a',88)}${macroGauge(t.f,T.f,'Fat','G','#ff8a3d',88)}</div>
     <div style="text-align:center;margin-top:8px;font-family:var(--mono);font-size:13px">${t.p>=T.p?'Protein target met ✓':`<b>${Math.round(T.p-t.p)} g</b> protein to go · ${Math.max(0,Math.round(T.kcal-t.kcal))} kcal left`}</div>
-    <div style="text-align:center;margin-top:8px"><button class="mini" onclick="toggleTrain()">${tr?'Training day':'Rest day'} — tap to switch</button></div></div>
+    ${FLAT_CARBS?'':`<div style="text-align:center;margin-top:8px"><button class="mini" onclick="toggleTrain()">${tr?'Training day':'Rest day'} — tap to switch</button></div>`}</div>
   <div class="card"><div style="font-weight:700;margin-bottom:8px">Plan meals</div>
     <button class="sess" style="width:100%;text-align:left" onclick="logMeal1()"><div style="flex:1"><div style="font-weight:600">Meal 1 — Chorizo & egg scramble + yogurt</div><div class="muted small">920 kcal · P83 C27 F52</div></div><span class="mini">+ Log</span></button>
-    <button class="sess" style="width:100%;text-align:left" onclick="logMeal2()"><div style="flex:1"><div style="font-weight:600">Meal 2 — ${PLAN_FOOD[k].name} bowl</div><div class="muted small">${m2.kcal} kcal · P${m2.p} C${m2.c} F${m2.f}${tr?' · + 2 tortillas today':''}</div>${m2.adj.text?`<div class="small" style="color:var(--gold);margin-top:2px">Adjusted for your target: ${esc(m2.adj.text)}</div>`:''}</div><span class="mini">+ Log</span></button>
+    <button class="sess" style="width:100%;text-align:left" onclick="logMeal2()"><div style="flex:1"><div style="font-weight:600">Meal 2 — ${PLAN_FOOD[k].name} bowl</div><div class="muted small">${m2.kcal} kcal · P${m2.p} C${m2.c} F${m2.f}${FLAT_CARBS||tr?' · + 2 tortillas':''}</div>${m2.adj.text?`<div class="small" style="color:var(--gold);margin-top:2px">Adjusted for your target: ${esc(m2.adj.text)}</div>`:''}</div><span class="mini">+ Log</span></button>
     <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px"><button class="mini" onclick="logFood(PLAN_FOOD.tort,'plan');toast('Tortillas logged');vFuelKeep()">+ 2 tortillas</button>
       <button class="mini" onclick="foodSheet('saved')">Saved foods</button><button class="mini" onclick="foodSheet('quick')">Quick add</button><button class="mini" onclick="foodSheet('out')">Ate out</button></div></div>`;
   h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Logged</div>${F.items.length?F.items.map(i=>`<div class="row" style="padding:7px 0;border-bottom:1px solid var(--line)">
@@ -1143,9 +1162,183 @@ function vFuel(){
     <div class="small" style="line-height:1.4">${esc(ci.msg)}</div>
     <div class="row" style="margin-top:10px"><div class="field" style="flex:1"><label>Log today's weight (lb)</label><input id="bwIn" inputmode="decimal" placeholder="${S.bw.length?S.bw[S.bw.length-1].v:''}"></div><button class="btn blue" style="margin-top:18px" onclick="addBW();vFuelKeep()">Save</button></div>
     ${ci.change?`<button class="btn blue" style="width:100%;margin-top:10px" onclick="applyCheckin(${ci.change})">Apply ${ci.change>0?'+':''}${ci.change} kcal to targets</button>`:''}
-    <div class="muted small" style="margin-top:8px">Targets: rest ${S.targets.rest.kcal} kcal · training ${S.targets.train.kcal} kcal · protein ${S.targets.rest.p} g · floor ${KC_FLOOR.rest}/${KC_FLOOR.train}</div></div>`;
+    <div class="muted small" style="margin-top:8px">${FLAT_CARBS?`Daily target: ${S.targets.train.kcal} kcal · ${S.targets.train.c} g carbs every day · protein ${S.targets.train.p} g · floor ${KC_FLOOR.train}`:`Targets: rest ${S.targets.rest.kcal} kcal · training ${S.targets.train.kcal} kcal · protein ${S.targets.rest.p} g · floor ${KC_FLOOR.rest}/${KC_FLOOR.train}`}</div></div>`;
   $('view').innerHTML=h;
 }
+
+/* =========================================================
+   MUAY THAI — 12-week solo striking plan (from 2026-10-27-striking-plan)
+   Lives inside the Workout tab behind the LIFT / MUAY THAI switch.
+   ========================================================= */
+const MT_START='2026-11-09';
+const MT_DAYMAP=['A','B','C','A','B','D','E']; // Mon..Sun
+const MT_WEEKS=[null,
+ {wave:'Low',mon:[3,2],kicks:10},{wave:'Medium',mon:[4,2],kicks:12},{wave:'High',mon:[5,2],kicks:15},{wave:'Deload',mon:[2,2],kicks:8},
+ {wave:'Low',mon:[3,3],kicks:15,hiit:6},{wave:'Medium',mon:[4,3],kicks:20,hiit:8},{wave:'High',mon:[5,3],kicks:25,hiit:10},{wave:'Deload',mon:[2,3],kicks:12,tech:true},
+ {wave:'Low',mon:[4,3],kicks:25,sim:3},{wave:'Medium',mon:[5,3],kicks:30,sim:4},{wave:'High',mon:[5,3],kicks:30,sim:5,burst:true},{wave:'Deload / test',mon:[2,3],kicks:15,sim:5,test:true}];
+const MT_THEMES=[null,
+ ['Stance, guard, footwork, jab','Return to stance after every strike; step and jab; double jab',0],
+ ['Teep, lead and rear','Teep to the hips; step-back rear teep; jab then teep',13],
+ ['Rear low kick and checking','Kick without squaring up; check, then return a kick',1],
+ ['Deload: review weeks 1–3','Jab, teep and low kick combinations',15],
+ ['Dutch combos into the low kick','Cross, hook, low kick; cross, uppercut, low kick',16],
+ ['Body work','Body jab, liver hook, body kick, finish low',6],
+ ['Slips and the counter lead hook','Slip the jab and return a hook; roll under, then a body hook',2],
+ ['Deload: head movement','Slow peek-a-boo slip step and shifting',17],
+ ['Short-fighter entries','Feint, T-step jab; slip step in; pressure the bag to an imagined corner',5],
+ ['Inside low kick → high kick setups',"Volk's step-up inside kick; low, body, then high",8],
+ ['Knees and clinch','Step-in knee; clinch knees on the bag; body-lock position',7],
+ ['Deload and test: distance','Bait the lunge and counter; in-and-out rhythm',22]];
+const MT_FIGHTS=[['Volkanovski vs Holloway III','UFC 276, 2022','Inside low kick, in-and-out vs a longer jabber'],['Volkanovski vs Korean Zombie','UFC 273, 2022','Leg kicks opening the hands'],
+ ['Yan vs Aldo','UFC 251, 2020','Steady pressure, body knee, finishing late'],['Yan vs Sandhagen','UFC 267, 2021','Holding the centre vs a taller switch-hitter'],
+ ['Yan vs Dvalishvili','UFC 323, 2025','Body attack, takedown defence'],['Topuria vs Volkanovski','UFC 298, 2024','Shoulder feints, body jabs, pinning'],
+ ['Rodtang vs Haggerty II','ONE, Jan 2020','Liver hook, body-first pressure'],['Rodtang vs Haggerty I','ONE, Aug 2019','Walking through a longer teeper'],
+ ['Superbon vs Petrosyan','ONE First Strike, 2021','Body kicks set up the head kick'],['Superbon vs Tayfun Özcan','ONE FN 11, 2023','Head-kick setups'],
+ ['Superbon vs Tawanchai','ONE FF 46, 2023','Elite kicking exchanges'],['Superbon vs Sitthichai III','ONE, 2020','Kicking chess vs a southpaw'],
+ ['Rodtang vs Takeru','ONE 172, 2025','Pocket power'],['Saenchai vs Liam Harrison III','2012','Teeps, lay-backs, sweeps vs a puncher'],
+ ['Saenchai vs Tetsuya Yamato','2010','Southpaw kick setups'],['Dekkers vs Coban (rematch)','Lumpinee, 1991','Dutch hands vs a Thai'],
+ ['Dekkers vs Duane Ludwig','K-1 MAX, 2005','Pressure with one arm'],['Tyson vs Berbick','1986','Peek-a-boo entries'],
+ ['Tyson vs Holmes','1988','Head movement vs a great jab'],['Tyson vs Spinks','1988','Peak Tyson'],
+ ['Volkanovski vs Aldo','UFC 237, 2019','Pressure vs an elite counter-puncher'],['Yan vs Sterling I','UFC 259, 2021','Slow build vs a longer opponent'],
+ ['Thompson vs Hendricks','UFC FN 82, 2016','Karate distance, countering the lunge'],['Machida vs Rashad Evans','UFC 98, 2009','Elusive karate countering'],
+ ['Petrosyan vs Andy Souwer','K-1 MAX, 2009','Defence-first ring generalship']];
+const MT_GATES={4:['Saturday tempo feels like RPE 5 or less','No shin or joint pain lasts into the next day'],
+ 8:["Finished week 7's HIIT with good form on the last interval",'Morning heart rate steady or lower than at the start']};
+const MT_NAMES={A:'Bag rounds',B:'Technique',C:'Film & fix',D:'Tempo intervals',E:'Mobility + film',Q:'Busy-day 15 min'};
+let MTD=null; // day shown on Muay Thai (never saved)
+const mtDay=()=>MTD||today();
+function mtStart(){return addDays(MT_START,S.mtShift||0)}
+function daysBetween(a,b){return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5)}
+function mtWeek(d){const n=daysBetween(mtStart(),d);return n<0?0:Math.floor(n/7)+1}
+function mtLog(d){if(!S.mt[d])S.mt[d]={};S.mt[d].t=Date.now();return S.mt[d]}
+function mtRhrAvg(d){const v=[];for(let i=2;i<=8;i++){const x=S.mt[addDays(d,-i)];if(x&&x.rhr)v.push(x.rhr)}return v.length>=3?v.reduce((a,b)=>a+b)/v.length:null}
+function mtRhrAlert(d){const a=mtRhrAvg(d),t=S.mt[d],y=S.mt[addDays(d,-1)];return !!(a&&t&&t.rhr&&y&&y.rhr&&t.rhr>=a+5&&y.rhr>=a+5)}
+function mtWeekLoad(monday){let s=0;for(let i=0;i<7;i++){const x=S.mt[addDays(monday,i)];if(x&&x.rpe&&x.min)s+=x.rpe*x.min}return s}
+function mtLoadInfo(d){const w=mtWeek(d);if(w<2)return null;const mon=addDays(mtStart(),(w-1)*7),cur=mtWeekLoad(mon),prev=[];
+  for(let k=1;k<=3&&w-k>=1;k++){const l=mtWeekLoad(addDays(mon,-7*k));if(l)prev.push(l)}if(!prev.length)return {cur,avg:null};
+  const avg=prev.reduce((a,b)=>a+b)/prev.length;return {cur,avg,over:cur>avg*1.2&&!/Deload/.test(MT_WEEKS[w].wave)}}
+// Builds the session for a date: which day type, the steps (with round timers), kick target
+function mtSession(d){
+  const w=mtWeek(d);if(w<1||w>12)return null;const W=MT_WEEKS[w],L=S.mt[d]||{},dow=(new Date(d+'T12:00:00').getDay()+6)%7;
+  let type=MT_DAYMAP[dow];const thu=dow===3;const high=type==='A';
+  if(L.busy)type='Q';else if(L.swap&&high)type='B';
+  const blk=Math.ceil(w/4),th=MT_THEMES[w],steps=[];let kicks=null,rpe='4–5';
+  const st=(name,rounds,work,rest,note)=>steps.push({name,rounds,work,rest,note:note||''});
+  if(type==='A'){rpe=blk===1?'6':blk===2?'7–8':'8';kicks=L.shin?Math.ceil(W.kicks/2):W.kicks;
+    st('Rope',1,300,0,'Easy, last 30 sec fast');st('Shadowboxing',2,180,60,'70% speed on: '+th[0]);
+    if(thu&&W.hiit){st('Technical bag',2,180,60,th[0]);st('HIIT',W.hiit,20,40,'All-out punches + kicks 20 sec, easy shadowboxing 40 sec')}
+    else if(thu&&W.tech){st('Technical bag',2,180,60,th[0]+' — no HIIT this week')}
+    else if(thu&&W.sim){st(W.test?'TEST: fight simulation':'Fight simulation',W.sim,180,60,'Build: technical → setups → pressure & power → clinch & knees → everything'+(W.burst?'. Last round in 30-sec bursts':'')+(W.test?'. Log RPE and heart rate after':''))}
+    else st('Bag rounds',W.mon[0],W.mon[1]*60,60,'R1 technical (theme only) · middle: setups, combos ending in a kick · last: pressure, body, finish low');
+    st('Hard kicks',0,0,0,'Count below. Stop early if shins are still sore');st('Cool-down',1,120,0,'Easy shadowboxing, nose breathing')}
+  else if(type==='B'){st('Rope',1,180,0);st('Shadowboxing',3,180,30,'R1 footwork only · R2 '+th[0]+' · R3 everything');
+    st('Bag drills',3,180,60,'RPE 4–5: '+th[1]+'. Taped target, return to knee guard after kicks');
+    st('Speed bag',2,120,30,w>=7&&w<=9?'Finish each round with 10 sec of slips':'Rhythm and hand speed')}
+  else if(type==='C'){rpe='3–4';st('Rope',1,180,0);st('Film yourself',3,180,30,'Phone side-on or at 45°');st('Watch it back',1,480,0,'Compare with '+MT_FIGHTS[th[2]][0]+'. Pick ONE fault');
+    st('Drill the fix',3,120,30,'Slow, then normal speed. Note the fix below')}
+  else if(type==='D'){rpe='5';const m=blk===1?15:blk===2?20:25;st('Rope',1,180,0);st('Tempo intervals',m,15,45,'15 sec on the bag at 70–75%, 45 sec easy shadowboxing. Should be able to talk in short sentences')}
+  else if(type==='E'){rpe='1–2';st('Mobility (coach Phase 1)',1,1200,0,'Foam roll calves, hams, quads, hip flexors, glutes · T-spine flex/ext · step hip-flexor stretch · Cook hip lift · lateral hamstring');
+    st('Watch the fight',0,0,0,MT_FIGHTS[th[2]][0]+' — once for fun, again for: '+th[0])}
+  else{rpe='4–5';st('Rope',1,180,0);st('Shadowboxing',3,180,20,'Theme: '+th[0]+', 70% speed');st('Speed bag',1,120,0)}
+  const liftDay=SESSIONS.some(s=>s.date===d&&s.id!=='tra'&&s.id!=='trb');
+  return {w,W,dow,type,high:type==='A',name:MT_NAMES[type],steps,kicks,rpe,theme:th,fight:MT_FIGHTS[th[2]],fightIdx:th[2],liftDay,blk}}
+
+/* round timer with beeps between phases */
+const RT={iv:null,st:null,
+  start(i){const s=mtSession(mtDay()),p=s&&s.steps[i];if(!p||!p.rounds)return;Timer.stop();unlockAudio();
+    this.st={i,label:p.name,rounds:p.rounds,work:p.work,rest:p.rest,r:1,phase:'work',end:Date.now()+p.work*1000};clearInterval(this.iv);this.iv=setInterval(()=>this.tick(),250);this.tick()},
+  stop(){clearInterval(this.iv);this.st=null;this.draw()},
+  tick(){const s=this.st;if(!s)return;
+    while(s.end<=Date.now()){if(s.phase==='work'){if(s.r>=s.rounds){beep();const i=s.i;this.stop();const L=mtLog(mtDay());L.steps=L.steps||{};L.steps[i]=true;save();toast('Done: '+s.label);vMuayKeep();return}
+        if(s.rest>0){s.phase='rest';s.end+=s.rest*1000}else{s.r++;s.end+=s.work*1000}}else{s.phase='work';s.r++;s.end+=s.work*1000}beep1()}
+    this.draw()},
+  draw(){const e=$('rtBox');if(!e)return;const s=this.st;if(!s){e.innerHTML='';e.style.display='none';return}e.style.display='block';
+    const left=Math.max(0,Math.ceil((s.end-Date.now())/1000)),tot=s.phase==='work'?s.work:s.rest,txt=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
+    e.innerHTML=`<div class="row" style="gap:12px"><svg class="gauge" width="86" height="86" viewBox="0 0 100 100">${gaugeSVG(left/tot,txt,s.phase==='work'?'WORK':'REST',s.phase==='work'?'#ff3b3b':'#8fd3ff',null)}</svg>
+      <div style="flex:1"><div style="font-weight:800">${esc(s.label)}</div><div class="muted small" style="font-family:var(--mono)">ROUND ${s.r} / ${s.rounds} · ${s.phase==='work'?'GO':'rest'}</div>
+      <div class="row" style="gap:6px;margin-top:6px"><button class="mini" onclick="RT.skip()">Skip ›</button><button class="mini" onclick="RT.stop()">Stop</button></div></div></div>`},
+  skip(){if(this.st){this.st.end=Date.now();this.tick()}}};
+function beep1(){try{unlockAudio();if(!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=660;g.gain.setValueAtTime(0.0001,AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.4,AC.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+0.35);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+0.4);if(navigator.vibrate)navigator.vibrate(150)}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&RT.st)RT.tick()});
+
+function modeSwitch(){const m=S.wmode==='mt';return `<div class="seg"><button class="${m?'':'on'}" onclick="setWMode('lift')">LIFT</button><button class="${m?'on':''}" onclick="setWMode('mt')">MUAY THAI</button></div>`}
+function setWMode(m){S.wmode=m;if(m==='mt')MTD=null;save();go('workout')}
+function vMuayKeep(){const y=window.scrollY;vMuay();window.scrollTo(0,y)}
+function mtMove(n){MTD=addDays(mtDay(),n);if(MTD===today())MTD=null;vMuay()}
+function mtSet(k,v){const d=mtDay();let n=v===''?null:+v;
+  if(n!=null){const lim={rhr:[30,140],rpe:[0,10],min:[1,180]}[k];if(!isFinite(n)||n<lim[0]||n>lim[1]){toast(`${{rhr:'Resting HR',rpe:'Effort',min:'Minutes'}[k]} must be ${lim[0]}–${lim[1]}`);vMuayKeep();return}n=k==='rhr'||k==='min'?Math.round(n):Math.round(n*2)/2}
+  const L=mtLog(d);L[k]=n;save();vMuayKeep()}
+function mtFlag(k){const L=mtLog(mtDay());L[k]=!L[k];save();vMuayKeep()}
+function mtStep(i){const L=mtLog(mtDay());L.steps=L.steps||{};L.steps[i]=!L.steps[i];save();vMuayKeep()}
+function mtKick(side,n){const s=mtSession(mtDay()),L=mtLog(mtDay()),k=side==='l'?'kl':'kr';L[k]=Math.max(0,Math.min(500,(L[k]||0)+n));
+  if(n>0&&s&&s.kicks&&L[k]===s.kicks+1)toast('Past today\'s target of '+s.kicks+' per leg — shins need time to adapt');save();vMuayKeep()}
+function mtFix(v){const L=mtLog(mtDay());L.fix=String(v).trim().slice(0,300);save()}
+function mtFinish(){const d=mtDay(),s=mtSession(d),L=mtLog(d);
+  if(L.rpe==null){toast('Rate the session effort (0–10) first');const e=$('mtRpe');if(e)e.focus();return}
+  if(!L.min)L.min=s&&s.type==='Q'?15:30;L.done=true;RT.stop();save();vMuayKeep();
+  const load=L.rpe*L.min;toast(`Session logged · load ${load}`)}
+function mtFilmToggle(i){S.mtFilm[i]=!S.mtFilm[i];if(!S.mtFilm[i])delete S.mtFilm[i];save();vMuayKeep()}
+function mtGate(w,i){const k=w+'_'+i;S.mtGate[k]=!S.mtGate[k];save();vMuayKeep()}
+function mtRepeatDeload(){if(!confirm('Repeat the deload week? Everything from this week on moves back 7 days.'))return;S.mtShift=(S.mtShift||0)+7;save();vMuayKeep();toast('Deload week repeated')}
+let mtShowFilms=false;
+function vMuay(){
+  const d=mtDay(),s=mtSession(d),L=S.mt[d]||{},isToday=d===today(),w=mtWeek(d);
+  let h=modeSwitch()+`<div class="hdrrow"><div style="flex:1"><h1>Muay Thai</h1><div class="muted small">Solo striking // 12-week plan · starts ${fmtDate(mtStart())}</div></div><div class="jag" style="width:72px;height:72px">${JAG_BADGE}</div></div>
+  <div class="row" style="margin:10px 0"><button class="btn sm" onclick="mtMove(-1)">‹</button><div style="flex:1;text-align:center;font-family:var(--mono);letter-spacing:1px">${isToday?'TODAY · ':''}${fmtDate(d)}</div><button class="btn sm" onclick="mtMove(1)">›</button></div>`;
+  h+=`<div id="rtBox" class="card" style="position:sticky;top:6px;z-index:15;display:none;border:1px solid var(--line)"></div>`;
+  // morning heart rate
+  h+=`<div class="card"><div class="row" style="gap:8px"><div style="flex:1"><div style="font-weight:700">Morning resting HR</div><div class="muted small">Before getting up, 1 min${mtRhrAvg(d)?' · 7-day avg '+Math.round(mtRhrAvg(d)):''}</div></div>
+    <input class="cell" style="width:84px" inputmode="numeric" placeholder="bpm" value="${L.rhr??''}" onchange="mtSet('rhr',this.value)"></div></div>`;
+  if(!s){
+    if(w<1){const pv=mtSession(mtStart());h+=`<div class="banner">PLAN STARTS ${fmtDate(mtStart()).toUpperCase()} — ${daysBetween(d,mtStart())} days out. Use the arrows to preview Week 1, or log resting HR now to build a baseline.</div>
+      <div class="card"><div style="font-weight:700">Week 1 theme: ${esc(pv.theme[0])}</div><div class="muted small" style="margin-top:4px">${esc(pv.theme[1])}</div><div class="small" style="margin-top:6px">Fight to study: <b>${esc(pv.fight[0])}</b> (${esc(pv.fight[1])})</div>
+      <button class="btn blue" style="width:100%;margin-top:10px" onclick="MTD='${mtStart()}';vMuay()">Preview Week 1, Day 1 ›</button></div>`}
+    else h+=`<div class="banner">12-WEEK PLAN COMPLETE — export your data (Export tab) and bring it to Claude to build the next phase.</div>`;
+    h+=mtFilmCard();$('view').innerHTML=h;RT.draw();return}
+  const lf=mtLoadInfo(d);
+  h+=`<div class="card"><div class="serial">MT-W${String(w).padStart(2,'0')}-${['MON','TUE','WED','THU','FRI','SAT','SUN'][s.dow]}<span class="bc" style="width:34px;height:9px"></span></div>
+    <div class="row"><div style="flex:1"><div style="font-size:20px;font-weight:800">${esc(s.name)}</div><div class="muted small">Week ${w} of 12 · Block ${s.blk} · ${esc(s.W.wave)} · ${s.high?'HIGH day':s.type==='E'?'Recovery':'Low day'} · target effort ${s.rpe}</div></div>
+    ${L.done?'<span class="chip" style="color:var(--green)">Done ✓</span>':''}</div>
+    <div class="ex-target" style="margin-top:8px">Theme: ${esc(s.theme[0])}</div><div class="ex-note">${esc(s.theme[1])}</div>
+    <div class="small">Fight to study: <b>${esc(s.fight[0])}</b> <span class="muted">(${esc(s.fight[1])})</span>${S.mtFilm[s.fightIdx]?' <span style="color:var(--green)">studied ✓</span>':''}</div></div>`;
+  if(s.high&&s.liftDay)h+=`<div class="banner">LIFT DAY TOO — lift first, or strike 3+ hours later.</div>`;
+  if(mtRhrAlert(d)&&(s.high||L.swap))h+=`<div class="banner">RECOVERY WARNING — resting HR 5+ bpm above your average two mornings running. ${L.swap?'Swapped to technique today.':`<button class="btn sm blue" style="margin-left:6px" onclick="mtFlag('swap')">Swap to technique</button>`}</div>`;
+  if(lf&&lf.over)h+=`<div class="banner">LOAD SPIKE — this week ${lf.cur} vs ${Math.round(lf.avg)} average. Keep the rest of the week easy (stay within +20%).</div>`;
+  if((w===5||w===9)&&!MT_GATES[w-1].every((_,i)=>S.mtGate[(w-1)+'_'+i]))h+=`<div class="banner">BLOCK GATE NOT CONFIRMED — tick the week ${w-1} checklist below, or repeat the deload week. <button class="btn sm" style="margin-left:6px" onclick="mtRepeatDeload()">Repeat deload</button></div>`;
+  // steps
+  h+=`<div class="card"><div class="row"><div style="font-weight:700;flex:1">Session</div>${s.type==='Q'?`<button class="mini" onclick="mtFlag('busy')">Back to full session</button>`:`<button class="mini" onclick="mtFlag('busy')">Busy day: 15 min</button>`}${L.swap&&!L.busy?` <button class="mini" onclick="mtFlag('swap')">Undo swap</button>`:''}</div>`;
+  s.steps.forEach((p,i)=>{const dn=L.steps&&L.steps[i];const tm=p.rounds?(p.rounds>1?`${p.rounds} × ${p.work>=60?(p.work/60)+' min':p.work+' sec'}${p.rest?` / ${p.rest} sec rest`:''}`:(p.work>=60?(p.work/60)+' min':'')):'';
+    h+=`<div class="mtstep ${dn?'done':''}"><button class="chk" onclick="mtStep(${i})">${CHECK}</button><div style="flex:1"><div style="font-weight:700">${esc(p.name)} <span class="muted small" style="font-family:var(--mono)">${tm}</span></div>${p.note?`<div class="muted small">${esc(p.note)}</div>`:''}
+      ${p.name==='Hard kicks'?mtKickHtml(s,L):''}</div>${p.rounds?`<button class="mini" onclick="RT.start(${i})">▶ Timer</button>`:''}</div>`});
+  if(s.type==='C')h+=`<div class="field" style="margin-top:8px"><label>The one fix I'm drilling</label><input value="${esc(L.fix||'')}" placeholder="e.g. right hand drops when I kick" onchange="mtFix(this.value)"></div>`;
+  h+=`</div>`;
+  // log
+  h+=`<div class="card"><div style="font-weight:700;margin-bottom:6px">Log</div><div class="grid2">
+    <div class="field"><label>Effort 0–10 (30 min after)</label><input id="mtRpe" inputmode="decimal" value="${L.rpe??''}" placeholder="${esc(s.rpe)}" onchange="mtSet('rpe',this.value)"></div>
+    <div class="field"><label>Minutes</label><input inputmode="numeric" value="${L.min??''}" placeholder="${s.type==='Q'?15:30}" onchange="mtSet('min',this.value)"></div></div>
+    <label class="row small" style="margin-top:10px;gap:8px"><input type="checkbox" ${L.shin?'checked':''} onchange="mtFlag('shin')"> Shin or joint pain from last session still there (halves kicks)</label>
+    <div class="muted small" style="margin-top:6px;font-family:var(--mono)">${L.rpe!=null&&L.min?'LOAD '+(L.rpe*L.min)+' · ':''}${lf?'WEEK LOAD '+lf.cur+(lf.avg?' · AVG '+Math.round(lf.avg):''):''}</div>
+    ${L.done?'':`<button class="btn primary" style="width:100%;margin-top:10px" onclick="mtFinish()">Finish session</button>`}</div>`;
+  if(MT_GATES[w]&&s.dow>=5){h+=`<div class="card"><div style="font-weight:700">Gate to Block ${s.blk+1}</div><div class="muted small" style="margin-bottom:6px">Move up only if both are true. Otherwise repeat this deload week.</div>
+    ${MT_GATES[w].map((g,i)=>`<label class="row small" style="gap:8px;padding:4px 0"><input type="checkbox" ${S.mtGate[w+'_'+i]?'checked':''} onchange="mtGate(${w},${i})"> ${esc(g)}</label>`).join('')}
+    <button class="btn sm" style="margin-top:6px" onclick="mtRepeatDeload()">Repeat deload week</button></div>`}
+  h+=mtFilmCard();
+  $('view').innerHTML=h;RT.draw();
+}
+function mtKickHtml(s,L){const t=s.kicks,kl=L.kl||0,kr=L.kr||0,c=v=>v>t?'var(--red)':v===t?'var(--green)':'#fff';
+  return `<div class="row" style="gap:10px;margin-top:6px;flex-wrap:wrap">${[['l','Left',kl],['r','Right',kr]].map(([k,n,v])=>`<div class="row" style="gap:4px"><span class="small muted">${n}</span>
+    <button class="mini" onclick="mtKick('${k}',-1)">−</button><b style="font-family:var(--mono);min-width:54px;text-align:center;color:${c(v)}">${v}/${t}</b><button class="mini" onclick="mtKick('${k}',1)">+1</button><button class="mini" onclick="mtKick('${k}',5)">+5</button></div>`).join('')}</div>${L.shin?'<div class="muted small">Halved for shin pain</div>':''}`}
+function mtFilmCard(){const n=Object.keys(S.mtFilm).length;let h=`<div class="card"><div class="row"><div style="font-weight:700;flex:1">Film list · ${n}/${MT_FIGHTS.length} studied</div><button class="mini" onclick="mtShowFilms=!mtShowFilms;vMuayKeep()">${mtShowFilms?'Hide':'Show'}</button></div>`;
+  if(mtShowFilms)h+=MT_FIGHTS.map((f,i)=>`<label class="row" style="gap:8px;padding:6px 0;border-bottom:1px solid var(--line);align-items:flex-start"><input type="checkbox" style="margin-top:3px" ${S.mtFilm[i]?'checked':''} onchange="mtFilmToggle(${i})"><div style="flex:1"><div style="font-weight:600">${i+1}. ${esc(f[0])}</div><div class="muted small">${esc(f[1])} · ${esc(f[2])}</div></div></label>`).join('')+`<div class="muted small" style="margin-top:6px">Analysts: Jack Slack, Lawrence Kenshin, Connor Ruebusch, Muay Thai Library.</div>`;
+  return h+'</div>'}
+function mtCharts(){const days=Object.keys(S.mt).filter(isDate).sort();if(!days.length)return '';
+  const rhr=days.filter(d=>S.mt[d].rhr).map(d=>({x:new Date(d+'T12:00:00').getTime(),y:S.mt[d].rhr}));
+  const wk={};days.forEach(d=>{const w=mtWeek(d);if(w<1)return;const x=S.mt[d];wk[w]=wk[w]||{load:0,kicks:0};if(x.rpe&&x.min)wk[w].load+=x.rpe*x.min;wk[w].kicks+=(x.kl||0)+(x.kr||0)});
+  const keys=Object.keys(wk).map(Number).sort((a,b)=>a-b);const bar=(f,c,u)=>{const mx=Math.max(1,...keys.map(k=>wk[k][f]));return keys.map(k=>`<div class="row small" style="margin:4px 0"><div style="width:54px" class="muted">Wk ${k}</div><div style="flex:1;background:#14171c;height:14px"><div style="width:${wk[k][f]/mx*100}%;background:${c};height:14px"></div></div><div style="width:64px;text-align:right">${wk[k][f]}${u}</div></div>`).join('')||'<div class="muted small">No sessions logged yet.</div>'};
+  return `<h2>Muay Thai</h2><div class="card"><div style="font-weight:700;margin-bottom:6px">Morning resting HR</div>${lineChart([{name:'Resting HR (bpm)',color:'#ff3b3b',pts:rhr}],{empty:'Log resting HR on the Muay Thai screen.'})}</div>
+    <div class="card"><div style="font-weight:700;margin-bottom:6px">Weekly load (effort × minutes)</div>${bar('load','var(--blue)','')}</div>
+    <div class="card"><div style="font-weight:700;margin-bottom:6px">Hard kicks per week (both legs)</div>${bar('kicks','#f5d33a','')}</div>`}
 
 /* boot */
 FD=null;
