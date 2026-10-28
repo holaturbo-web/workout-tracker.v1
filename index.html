@@ -289,6 +289,7 @@ tr.done .cell,tr.done .setno{background:#0f1a24;border-color:#2f4a60;color:#fff}
 html,body{overflow-x:hidden}
 #view,#sheet,.toast{overflow-wrap:anywhere;word-break:break-word}
 #view *,#sheet *{min-width:0}
+#view h1,#view h2,.ex-title,.mtstep b,.card>div[style*="font-weight:700"]{min-width:fit-content}
 table{table-layout:fixed}
 th:nth-child(5),td:nth-child(5){width:48px}
 .prev{white-space:normal;overflow:hidden}
@@ -1487,7 +1488,7 @@ function mtTodayHtml(){
   if((w===5||w===9)&&!MT_GATES[w-1].every((_,i)=>S.mtGate[(w-1)+'_'+i]))h+=`<div class="banner">BLOCK GATE NOT CONFIRMED — tick the week ${w-1} checklist, or repeat the deload week. <button class="btn sm" style="margin-left:6px" onclick="mtRepeatDeload()">Repeat deload</button></div>`;
   if(tw&&s.dow===3)h+=`<div class="banner">TEST WEEK ${tw} — after your hardest round today, log heart rate and rope skips in the test card below.</div>`;
   // steps
-  h+=`<div class="card"><div class="row" style="gap:6px;flex-wrap:wrap"><div style="font-weight:700;flex:1">Session</div><button class="mini" onclick="mtCallerToggle()">Caller: ${S.mtCaller===false?'OFF':'ON'}</button>${S.mtCaller===false?'':'<button class="mini" onclick="mtTestVoice()">🔊 Test voice</button>'}${s.type==='Q'?`<button class="mini" onclick="mtFlag('busy')">Full session</button>`:`<button class="mini" onclick="mtFlag('busy')">Busy day: 15 min</button>`}${L.swap&&!L.busy?`<button class="mini" onclick="mtFlag('swap')">Undo swap</button>`:''}</div>`;
+  h+=`<div class="card"><div style="font-weight:700">Session</div><div class="chips" style="margin-bottom:4px"><button class="mini" onclick="mtCallerToggle()">Caller: ${S.mtCaller===false?'OFF':'ON'}</button>${S.mtCaller===false?'':'<button class="mini" onclick="mtTestVoice()">🔊 Test voice</button>'}${s.type==='Q'?`<button class="mini" onclick="mtFlag('busy')">Full session</button>`:`<button class="mini" onclick="mtFlag('busy')">Busy day: 15 min</button>`}${L.swap&&!L.busy?`<button class="mini" onclick="mtFlag('swap')">Undo swap</button>`:''}</div>`;
   s.steps.forEach((p,i)=>{const dn=L.steps&&L.steps[i];const tm=p.rounds?(p.rounds>1?`${p.rounds} × ${p.work>=60?(p.work/60)+' min':p.work+' sec'}${p.rest?` / ${p.rest} sec rest`:''}`:(p.work>=60?(p.work/60)+' min':'')):'';
     h+=`<div class="mtstep ${dn?'done':''}"><button class="chk" onclick="mtStep(${i})">${CHECK}</button><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(p.name)} <span class="muted small" style="font-family:var(--mono)">${tm}</span></div>${p.note?`<div class="muted small">${esc(p.note)}</div>`:''}
       ${p.call&&S.mtCaller!==false?'<div class="small" style="color:var(--gold)">🔊 Combo caller calls Ambush numbers in this step</div>':''}
